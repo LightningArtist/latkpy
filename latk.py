@@ -49,6 +49,96 @@ import zipfile
 import io
 from io import BytesIO
 
+# * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+class LatkLayer:
+    frames = [] # LatkFrame
+    int currentFrame = 0
+    String name = "P5layer"
+    
+    LatkLayer()    
+    
+    def run() 
+        frames.get(currentFrame).run()
+    
+    def run(PGraphics g) 
+        frames.get(currentFrame).run(g)
+    
+    def nextFrame() 
+        currentFrame++
+        if (currentFrame > frames.size()-1) currentFrame = 0
+    
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+class LatkFrame:
+    strokes = [] # LatkStroke
+    
+    LatkFrame()    
+    
+    def run() 
+        for (int i=0 i<strokes.size() i++) 
+            strokes.get(i).run()
+    
+    def run(PGraphics g) 
+        for (int i=0 i<strokes.size() i++) 
+            strokes.get(i).run(g)
+        
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+class LatkStroke: 
+    PShape s
+    points = [] # Vector
+    color col = color(255)
+    float globalScale = 1
+    PVector globalOffset = new PVector(0,0,0)
+        
+    LatkStroke(ArrayList<PVector> _p, color _c) 
+        init(_p, _c)
+
+    def init(ArrayList<PVector> _p, color _c) 
+        setColor(_c)
+        setPoints(_p)
+
+    def run() 
+        pushMatrix()
+        scale(globalScale, globalScale, globalScale)
+        shape(s)
+        popMatrix()
+    
+    def run(PGraphics g) 
+        g.pushMatrix()
+        g.scale(globalScale, globalScale, globalScale)
+        g.shape(s)
+        g.popMatrix()
+    
+    def getColor() 
+        return s.getStroke(0)
+    
+    def setColor(color _c) 
+        col = _c
+    
+    def getPoints() 
+        ArrayList<PVector> points = new ArrayList<PVector>()
+        for (int i=0 i<s.getVertexCount() i++) 
+            points.add(s.getVertex(i))
+        
+        return points
+    
+    def setPoints(ArrayList<PVector> _p) 
+        s = createShape()
+        s.beginShape()
+        s.noFill()
+        s.stroke(col)
+        s.strokeWeight(2)
+        for (int i=0 i<_p.size() i++) 
+            PVector pt = _p.get(i)
+            s.vertex(pt.z, -pt.y, pt.x)
+        
+        s.endShape()
+        points = _p
+    
+# * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 def writeTextFile(name="test.txt", lines=None):
     file = open(name,"w") 
     for line in lines:
@@ -307,11 +397,6 @@ class InMemoryZip(object):
         f.write(self.readFromMemory())
         f.close()
 
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
