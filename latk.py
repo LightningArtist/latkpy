@@ -46,41 +46,49 @@ import os
 import zipfile
 import io
 from io import BytesIO
+#~
+import PIL.ImageDraw as ImageDraw
+import PIL.Image as Image
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-class Latk:     
-    def __init__(self, fileName=None):
+class Latk(object):     
+    def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, vector array, color tuple    
         self.json # JSONObject 
         self.jsonGp # JSONObject 
         self.jsonLayer # JSONObject 
         self.jsonFrame # JSONObject 
         self.jsonStroke # JSONObject 
-        self.jsonPoint # JSONObject 
-        
+        self.jsonPoint # JSONObject         
         self.layers = [] # LatkLayer
-
         self.jsonFilename = "layer_test"
-        
         self.currentLayer = 0
-        
         self.cleanMinPoints = 1
-        self.cleanMinLength = 0.1       
-        if not fileName:
-            self.layers = []
-            self.layers.append(new LatkLayer())
-            self.layers.get(layers.size()-1).frames.append(new LatkFrame())
-        else:
+        self.cleanMinLength = 0.1 
+
+        if (fileName==None and latks==None and points==None): # new empty Latk
+            self.layers.append(LatkLayer())
+            self.layers[0].frames.append(LatkFrame())
+        elif (fileName==None and latks!=None and points==None): # merge array of latks
+            pass # TODO read with clear existing false
+        elif (fileName==None and latks==None and points!=None): # 
+            self.layers.append(LatkLayer())
+            self.layers[0].frames.append(LatkFrame())
+            
+            st = LatkStroke(_pts, _c)
+            self.layers[0].frames[0].strokes.append(st)
+        else: # load from url
             self.read(fileName, True)
     
         print("Latk strokes loaded.")
         
     def getFileNameNoExt(self, s): # arg string, return string
         returns = ""
-        temp = s.split(Pattern.quote("."))
-        if (temp.length > 1): 
-            for (int i=0 i<temp.length-1 i++):
-                if (i > 0) returns += "."
+        temp = s.split(".")
+        if (len(temp) > 1): 
+            for i in range(0, len(temp)-1):
+                if (i > 0):
+                    returns += "."
                 returns += temp[i]
                     else:
             return s
@@ -289,7 +297,7 @@ class Latk:
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
-class LatkLayer:    
+class LatkLayer(object):    
     def __init__(self):    
         self.frames = [] # LatkFrame
         self.currentFrame = 0
@@ -297,13 +305,13 @@ class LatkLayer:
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
-class LatkFrame:   
+class LatkFrame(object):   
     def __init__(self):    
         self.strokes = [] # LatkStroke
         
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
-class LatkStroke:       
+class LatkStroke(object):       
     def __init__(self, ArrayList<PVector> _p, color _c): 
         self.PShape s
         self.points = [] # Vector
