@@ -75,8 +75,6 @@ class Latk(object):
         else: # load from url
             self.read(fileName, True)
     
-        print("Latk strokes loaded.")
- 
     def createImage(self, _width, _height):
         return Image.new("RGB", (_width, _height))
 
@@ -283,31 +281,42 @@ class Latk(object):
                             # 4. Finally, check the number of points again.
                             if (len(stroke.points) < cleanMinPoints): 
                                 frame.strokes.remove(stroke)
+    def setStroke(self, stroke):
+        lastLayer = self.layers[len(self.layers)-1]
+        lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
+        lastFrame.strokes.append(stroke)
+
+    def setPoints(self, points):
+        lastLayer = self.layers[len(self.layers)-1]
+        lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
+        stroke = LatkStroke()
+        stroke.setPoints(points)
+        lastFrame.strokes.append(stroke)
     
-    def getDistance(v1, v2):
+    def getDistance(self, v1, v2):
         return sqrt( (v1[0] - v2[0])**2 + (v1[1] - v2[1])**2 + (v1[2] - v2[2])**2)
 
-    def hitDetect3D(p1, p2, hitbox=0.01):
+    def hitDetect3D(self, p1, p2, hitbox=0.01):
         if (getDistance(p1, p2) <= hitbox):
             return True
         else:
             return False
              
-    def roundVal(a, b):
+    def roundVal(self, a, b):
         formatter = "{0:." + str(b) + "f}"
         return formatter.format(a)
 
-    def roundValInt(a):
+    def roundValInt(self, a):
         formatter = "{0:." + str(0) + "f}"
         return int(formatter.format(a))
 
-    def writeTextFile(name="test.txt", lines=None):
+    def writeTextFile(self, name="test.txt", lines=None):
         file = open(name,"w") 
         for line in lines:
             file.write(line) 
         file.close() 
 
-    def readTextFile(name="text.txt"):
+    def readTextFile(self, name="text.txt"):
         file = open(name, "r") 
         return file.read() 
 
@@ -329,9 +338,20 @@ class LatkFrame(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke(object):       
-    def __init__(self, points, col): # args float tuple array, float tuple 
+    def __init__(self, points=None, col=(1.0,1.0,1.0)): # args float tuple array, float tuple 
         self.points = points
         self.col = col
+
+    def setPoints(self, points):
+        self.points = []
+        for point in points:
+            self.points.append(LatkPoint(point))
+
+    def getPoints(self):
+        returns = []
+        for point in self.points:
+            returns.append(point.co)
+        return returns
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
