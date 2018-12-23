@@ -135,31 +135,31 @@ class Latk(object):
         for layer in self.layers:
             sb = [] # string array
             sbHeader = [] # string array
-            sbHeader.append("\t\t\t\t\t\"frames\":[")
+            sbHeader.append("\t\t\t\t\t\"frames\": [")
             sb.append("\n".join(sbHeader))
 
             for h, frame in enumerate(layer.frames):
                 sbbHeader = [] # string array
-                sbbHeader.append("\t\t\t\t\t\t")
-                sbbHeader.append("\t\t\t\t\t\t\t\"strokes\":[")
+                sbbHeader.append("\t\t\t\t\t\t{")
+                sbbHeader.append("\t\t\t\t\t\t\t\"strokes\": [")
                 sb.append("\n".join(sbbHeader))
                 
                 for i, stroke in enumerate(frame.strokes):
                     sbb = [] # string array
-                    sbb.append("\t\t\t\t\t\t\t\t")
+                    sbb.append("\t\t\t\t\t\t\t\t{")
                     col = stroke.col
-                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + str(col[0]) + ", " + str(col[1]) + ", " + str(col[2]) + "],")
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(col[0]) + ", " + str(col[1]) + ", " + str(col[2]) + "],")
 
                     if (len(stroke.points) > 0): 
-                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
+                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\": [")
                         for j, point in enumerate(stroke.points):                                     
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
                     else:
-                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
+                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\": []")
                     
                     if (i == len(frame.strokes) - 1):
                         sbb.append("\t\t\t\t\t\t\t\t}")
@@ -180,28 +180,28 @@ class Latk(object):
             FINAL_LAYER_LIST.append("\n".join(sb))
         
         s = [] # string
-        s.append("")
-        s.append("\t\"creator\": \"processing\",")
-        s.append("\t\"grease_pencil\":[")
-        s.append("\t\t")
-        s.append("\t\t\t\"layers\":[")
+        s.append("{")
+        s.append("\t\"creator\": \"latk.py\",")
+        s.append("\t\"grease_pencil\": [")
+        s.append("\t\t{")
+        s.append("\t\t\t\"layers\": [")
 
         for i, layer in enumerate(self.layers):
-            s.append("\t\t\t\t")
+            s.append("\t\t\t\t{")
             if (layer.name != None and layer.name != ""): 
                 s.append("\t\t\t\t\t\"name\": \"" + layer.name + "\",")
             else:
                 s.append("\t\t\t\t\t\"name\": \"layer" + str(i + 1) + "\",")
                 
-                s.append(FINAL_LAYER_LIST[i])
+            s.append(FINAL_LAYER_LIST[i])
 
-                s.append("\t\t\t\t\t]")
-                if (layer < len(self.layers) - 1): 
-                    s.append("\t\t\t\t},")
-                else:
-                    s.append("\t\t\t\t}")
-                    s.append("\t\t\t]") # end layers
-        s.append("\t\t")
+            s.append("\t\t\t\t\t]")
+            if (layer < len(self.layers) - 1): 
+                s.append("\t\t\t\t},")
+            else:
+                s.append("\t\t\t\t}")
+                s.append("\t\t\t]") # end layers
+        s.append("\t\t}")
         s.append("\t]")
         s.append("}")
         
