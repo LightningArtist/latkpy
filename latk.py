@@ -60,13 +60,13 @@ class Latk(object):
             self.layers.append(LatkLayer())
             self.layers[0].frames.append(LatkFrame())
         elif (fileName==None and latks!=None and points==None): # merge Latk array
-            pass # TODO read with clear existing false
+            pass # TODO read multiple times without clearing
         elif (fileName==None and latks==None and points!=None): # 
             self.layers.append(LatkLayer())
             self.layers[0].frames.append(LatkFrame())
             
-            st = LatkStroke(_pts, _c)
-            self.layers[0].frames[0].strokes.append(st)
+            stroke = LatkStroke(_pts, _c)
+            self.layers[0].frames[0].strokes.append(stroke)
         else: # load from url
             self.read(fileName, True)
     
@@ -105,89 +105,82 @@ class Latk(object):
             with open(fileName) as data_file:    
                 data = json.load(data_file)
                             
-        for (int h=0 h<json.getJSONArray("grease_pencil").size() h++) 
-            jsonGp = json.getJSONArray("grease_pencil").get(h)
-            
-            for (int i=0 i<jsonGp.getJSONArray("layers").size() i++) 
-                layers.append(new LatkLayer())
+        for jsonGp in data["grease_pencil"]:          
+            for jsonLayer in jsonGp["layers"]:
+                layer = LatkLayer(jsonLayer["name"])
                 
-                jsonLayer = jsonGp.getJSONArray("layers").get(i)
-                for (int j=0 j<jsonLayer.getJSONArray("frames").size() j++) 
-                    layers.get(layers.size()-1).frames.append(new LatkFrame())
-
-                    jsonFrame = jsonLayer.getJSONArray("frames").get(j)
-                    for (int l=0 l<jsonFrame.getJSONArray("strokes").size() l++) 
-                        jsonStroke = jsonFrame.getJSONArray("strokes").get(l)
+                for jsonFrame in jsonLayer["frames"]:
+                    frame = LatkFrame()
+                    for jsonStroke in jsonFrame["strokes"]:                       
+                        r = float(jsonStroke["color"][0])
+                        g = float(jsonStroke["color"][1])
+                        b = float(jsonStroke["color"][2])
+                        col = (r,g,b)
                         
-                        int r = int(255.0 * jsonStroke.getJSONArray("color").getFloat(0))
-                        int g = int(255.0 * jsonStroke.getJSONArray("color").getFloat(1))
-                        int b = int(255.0 * jsonStroke.getJSONArray("color").getFloat(2))
-                        color col = color(r,g,b)
-                        
-                        ArrayList<PVector> pts = new ArrayList<PVector>()
-                        for (int m=0 m<jsonStroke.getJSONArray("points").size() m++) 
-                            jsonPoint = jsonStroke.getJSONArray("points").get(m)
-                            PVector p = new PVector(jsonPoint.getJSONArray("co").getFloat(0), jsonPoint.getJSONArray("co").getFloat(1), jsonPoint.getJSONArray("co").getFloat(2))
-                            pts.append(p)#.mult(globalScale))
+                        pts = []
+                        for jsonPoint in jsonStroke["points"]:
+                            x = float(jsonPoint["co"][0])
+                            y = float(jsonPoint["co"][0])
+                            z = float(jsonPoint["co"][0])
+                            pts.append((x,y,z))
                                                 
-                        LatkStroke st = new LatkStroke(pts, col)
-                        st.globalScale = globalScale
-                        layers.get(layers.size()-1).frames.get(layers.get(layers.size()-1).frames.size()-1).strokes.append(st)
-                                                                
-    def write(self, fileName) # args string
+                        stroke = LatkStroke(pts, col)
+                        frame.strokes.append(stroke)
+                    layer.frames.append(frame)
+                self.layers.append(layer)
+
+    def write(self, fileName): # args string
         FINAL_LAYER_LIST = [] # string array
 
-        for layer in layers:
+        for layer in self.layers:
             sb = [] # string array
             sbHeader = [] # string array
             sbHeader.append("\t\t\t\t\t\"frames\":[")
-            sb.append(String.join("\n", sbHeader.toArray(new String[sbHeader.size()])))
+            sb.append("\n".join(sbHeader))
 
-            for frame in layer.frames:
+            for h, frame in enumerate(layer.frames):
                 sbbHeader = [] # string array
                 sbbHeader.append("\t\t\t\t\t\t")
                 sbbHeader.append("\t\t\t\t\t\t\t\"strokes\":[")
-                sb.append(String.join("\n", sbbHeader.toArray(new String[sbbHeader.size()])))
-                for stroke in frame.strokes:
+                sb.append("\n".join(sbbHeader))
+                
+                for i, stroke in enumerate(frame.strokes):
                     sbb = [] # string array
                     sbb.append("\t\t\t\t\t\t\t\t")
-                    color col = layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).col
-                    float r = roundVal(red(col) / 255.0, 5)
-                    float g = roundVal(green(col) / 255.0, 5)
-                    float b = roundVal(blue(col) / 255.0, 5)
+                    col = stroke.col
+                    r = roundVal(col[0], 5)
+                    g = roundVal(col[1], 5)
+                    b = roundVal(col[2], 5)
                     sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + r + ", " + g + ", " + b + "],")
 
-                    if (layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() > 0) 
-                            sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
-                            for (int j = 0 j < layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() j++) 
-                                    PVector pt = layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.get(j)
-                                    #pt.mult(1.0/globalScale)
-                                    
-                                    if (j == layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() - 1) 
-                                            sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1}")
-                                            sbb.append("\t\t\t\t\t\t\t\t\t]")
-                                    else:
-                                            sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1},")
-                                                                                                            else:
-                            sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
+                    if (len(stroke.points) > 0): 
+                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
+                        for j, pt in enumerate(stroke.points):                                     
+                            if (j == len(stroke.points) - 1):
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t]")
+                            else:
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1},")
+                    else:
+                        sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
                     
-                    if (i == layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.size() - 1) 
+                    if (i == len(frame.strokes) - 1):
                         sbb.append("\t\t\t\t\t\t\t\t}")
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t},")
                     
-                    sb.append(String.join("\n", sbb.toArray(new String[sbb.size()])))
+                    sb.append("\n".join(sbb))
                     
-                    ArrayList<String> sbFooter = new ArrayList<String>()
-                    if (h == layers.get(layer).frames.size() - 1): 
+                    sbFooter = []
+                    if (h == len(layer.frames) - 1): 
                         sbFooter.append("\t\t\t\t\t\t\t]")
                         sbFooter.append("\t\t\t\t\t\t}")
                     else:
                         sbFooter.append("\t\t\t\t\t\t\t]")
                         sbFooter.append("\t\t\t\t\t\t},")
-                    sb.append(String.join("\n", sbFooter.toArray(new String[sbFooter.size()])))
+                    sb.append("\n".join(sbFooter))
             
-            FINAL_LAYER_LIST.append(String.join("\n", sb.toArray(new String[sb.size()])))
+            FINAL_LAYER_LIST.append("\n".join(sb))
         
         s = [] # string
         s.append("")
@@ -196,23 +189,23 @@ class Latk(object):
         s.append("\t\t")
         s.append("\t\t\t\"layers\":[")
 
-        for layer in layers:
+        for i, layer in enumerate(self.layers):
             s.append("\t\t\t\t")
-            if (layers.get(layer).name != null && layers.get(layer).name != ""): 
-                s.append("\t\t\t\t\t\"name\": \"" + layers.get(layer).name + "\",")
+            if (layer.name != None and layer.name != ""): 
+                s.append("\t\t\t\t\t\"name\": \"" + layer.name + "\",")
             else:
-                s.append("\t\t\t\t\t\"name\": \"UnityLayer " + (layer + 1) + "\",")
+                s.append("\t\t\t\t\t\"name\": \"layer" + str(i + 1) + "\",")
                 
-                s.append(FINAL_LAYER_LIST.get(layer))
+                s.append(FINAL_LAYER_LIST[i])
 
                 s.append("\t\t\t\t\t]")
-                if (layer < layers.size() - 1): 
+                if (layer < len(self.layers) - 1): 
                     s.append("\t\t\t\t},")
                 else:
                     s.append("\t\t\t\t}")
-                                s.append("                        ]") # end layers
-        s.append("                }")
-        s.append("        ]")
+                    s.append("\t\t\t]") # end layers
+        s.append("\t\t")
+        s.append("\t]")
         s.append("}")
         
         fileType = getExtFromFileName(fileName)
@@ -281,10 +274,12 @@ class Latk(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer(object):    
-    def __init__(self):    
+    def __init__(self, name=None): 
+        if not name:
+            name = "layer"   
         self.frames = [] # LatkFrame
         self.currentFrame = 0
-        self.name = "layer"
+        self.name = name
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 

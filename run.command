@@ -10,6 +10,6 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 cd $DIR
 
-INPUT=test.latk
+INPUT=example/latk_logo.latk
 
 python latk_viz.py -- $DIR/$INPUT $DIR/
