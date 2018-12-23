@@ -9,7 +9,7 @@ outputDir = argv[1]
 def main():
     data = Latk(inputDir)
 
-    #data.draw() 
+    data.render() 
     data.write(outputDir)
 
 print("Reading from : " + inputDir)

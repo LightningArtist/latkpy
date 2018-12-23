@@ -55,6 +55,11 @@ import PIL.Image as Image
 class Latk(object):     
     def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
+        # Pillow
+        self.width = 1024
+        self.height = 1024
+        self.image = self.createImage(self.width, self.height)
+        self.draw = self.createDraw(self.image)
 
         if (fileName==None and latks==None and points==None): # new empty Latk
             self.layers.append(LatkLayer())
@@ -71,7 +76,13 @@ class Latk(object):
             self.read(fileName, True)
     
         print("Latk strokes loaded.")
-        
+ 
+    def createImage(self, _width, _height):
+        return Image.new("RGB", (_width, _height))
+
+    def createDraw(self, _image):
+        return ImageDraw.Draw(_image)
+
     def getFileNameNoExt(self, s): # args string, return string
         returns = ""
         temp = s.split(".")
@@ -90,6 +101,24 @@ class Latk(object):
         returns = temp[len(temp)-1]
         return returns
         
+    def render(self):
+        for layer in self.layers:
+            for frame in layer.frames:
+                for stroke in frame.strokes:
+                    r = int(stroke.col[0] * 255)
+                    g = int(stroke.col[1] * 255)
+                    b = int(stroke.col[2] * 255)
+                    col = (r,g,b)
+
+                    points = []
+                    for point in stroke.points:
+                        x = int(point.co[1] * self.width)
+                        y = int(point.co[2] * self.height)
+                        points.append((x,y))
+                    if (len(points) > 1):
+                        self.draw.polygon(points, outline=col)
+        self.image.show()
+
     def read(self, fileName, clearExisting=True): # args string, bool
         data = None
 
