@@ -266,11 +266,13 @@ class Latk(object):
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
         lastFrame.strokes.append(stroke)
 
-    def setPoints(self, points):
+    def setPoints(self, points, col=None):
         lastLayer = self.layers[len(self.layers)-1]
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
         stroke = LatkStroke()
         stroke.setPoints(points)
+        if (col != None):
+            stroke.col = col
         lastFrame.strokes.append(stroke)
     
     def getDistance(self, v1, v2):
@@ -322,10 +324,12 @@ class LatkStroke(object):
         self.points = points
         self.col = col
 
-    def setPoints(self, points):
+    def setPoints(self, points, col=None):
         self.points = []
         for point in points:
             self.points.append(LatkPoint(point))
+        if (col != None):
+            self.col = col
 
     def getPoints(self):
         returns = []
