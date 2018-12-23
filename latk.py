@@ -31,7 +31,7 @@ import xml.etree.ElementTree as etree
 import base64
 #~
 import re
-import parameter_editor
+#import parameter_editor
 import random
 import sys
 import gc
@@ -39,7 +39,7 @@ import struct
 import uuid
 import contextlib
 from collections import defaultdict
-from itertools import zip_longest
+#from itertools import zip_longest
 from operator import itemgetter
 #~
 import os
@@ -224,7 +224,7 @@ class Latk(object):
             for frame in layer.frames: 
                 for stroke in frame.strokes:
                     # 1. Remove the stroke if it has too few points.
-                    if (len(stroke.points) < cleanMinPoints) 
+                    if (len(stroke.points) < cleanMinPoints): 
                         frame.strokes.remove(stroke)
                     else:
                         totalLength = 0.0
@@ -232,16 +232,16 @@ class Latk(object):
                             p1 = stroke.points[i] # float tuple
                             p2 = stroke.points[i-1] # float tuple
                             # 2. Remove the point if it's a duplicate.
-                            if (hitDetect3D(p1, p2, 0.1)) 
+                            if (hitDetect3D(p1, p2, 0.1)): 
                                 stroke.points.remove(points[i])
                             else:
                                 totalLength += getDistance(p1, p2)
                         # 3. Remove the stroke if its length is too small.
-                        if (totalLength < cleanMinLength) 
+                        if (totalLength < cleanMinLength): 
                             frame.strokes.remove(stroke)
                         else:
                             # 4. Finally, check the number of points again.
-                            if (len(stroke.points) < cleanMinPoints) 
+                            if (len(stroke.points) < cleanMinPoints): 
                                 frame.strokes.remove(stroke)
     
     def getDistance(v1, v2):
@@ -290,7 +290,7 @@ class LatkFrame(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke(object):       
-    def __init__(self, ArrayList<PVector> _p, color _c): 
+    def __init__(self, _p, _c): # args float tuple array, float tuple 
         self.points = [] # Vector
         self.col = (1.0, 1.0, 1.0)
         self.globalScale = 1.0
