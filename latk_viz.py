@@ -1,15 +1,10 @@
 from latk import *
 
 def main():
-    pass
-    '''
-    fileName = "test.latk"
+    data = Latk("./example/latk_logo.latk")
 
-    data = Latk(fileName)
-
-    data.draw() 
-    data.write()
-    '''
+    #data.draw() 
+    data.write("test.latk")
   
 argv = sys.argv
 argv = argv[argv.index("--") + 1:] # get all args after "--"

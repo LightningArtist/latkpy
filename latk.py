@@ -96,10 +96,10 @@ class Latk(object):
         if (clearExisting == True):
             self.layers = []
         
-        fileType = getExtFromFileName(fileName)
+        fileType = self.getExtFromFileName(fileName)
         if (fileType == "latk" or fileType == "zip"):
             imz = InMemoryZip()
-            imz.readFromDisk(url)
+            imz.readFromDisk(fileName)
             data = json.loads(imz.files[0].decode("utf-8"))        
         else:
             with open(fileName) as data_file:    
@@ -117,14 +117,14 @@ class Latk(object):
                         b = float(jsonStroke["color"][2])
                         col = (r,g,b)
                         
-                        pts = []
+                        points = []
                         for jsonPoint in jsonStroke["points"]:
                             x = float(jsonPoint["co"][0])
-                            y = float(jsonPoint["co"][0])
-                            z = float(jsonPoint["co"][0])
-                            pts.append((x,y,z))
+                            y = float(jsonPoint["co"][1])
+                            z = float(jsonPoint["co"][2])
+                            points.append(LatkPoint((x,y,z)))
                                                 
-                        stroke = LatkStroke(pts, col)
+                        stroke = LatkStroke(points, col)
                         frame.strokes.append(stroke)
                     layer.frames.append(frame)
                 self.layers.append(layer)
@@ -148,19 +148,16 @@ class Latk(object):
                     sbb = [] # string array
                     sbb.append("\t\t\t\t\t\t\t\t")
                     col = stroke.col
-                    r = roundVal(col[0], 5)
-                    g = roundVal(col[1], 5)
-                    b = roundVal(col[2], 5)
-                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + r + ", " + g + ", " + b + "],")
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + str(col[0]) + ", " + str(col[1]) + ", " + str(col[2]) + "],")
 
                     if (len(stroke.points) > 0): 
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
-                        for j, pt in enumerate(stroke.points):                                     
+                        for j, point in enumerate(stroke.points):                                     
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1},")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
                     
@@ -208,9 +205,9 @@ class Latk(object):
         s.append("\t]")
         s.append("}")
         
-        fileType = getExtFromFileName(fileName)
+        fileType = self.getExtFromFileName(fileName)
         if (fileType == "latk" or fileType == "zip"):
-            fileNameNoExt = getFileNameNoExt(fileName)
+            fileNameNoExt = self.getFileNameNoExt(fileName)
             imz = InMemoryZip()
             imz.append(fileNameNoExt + ".json", "\n".join(s))
             imz.writetofile(fileName)            
@@ -232,10 +229,10 @@ class Latk(object):
                             p1 = stroke.points[i] # float tuple
                             p2 = stroke.points[i-1] # float tuple
                             # 2. Remove the point if it's a duplicate.
-                            if (hitDetect3D(p1, p2, 0.1)): 
+                            if (hitDetect3D(p1.co, p2.co, 0.1)): 
                                 stroke.points.remove(points[i])
                             else:
-                                totalLength += getDistance(p1, p2)
+                                totalLength += getDistance(p1.co, p2.co)
                         # 3. Remove the stroke if its length is too small.
                         if (totalLength < cleanMinLength): 
                             frame.strokes.remove(stroke)
@@ -278,7 +275,6 @@ class LatkLayer(object):
         if not name:
             name = "layer"   
         self.frames = [] # LatkFrame
-        self.currentFrame = 0
         self.name = name
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -290,28 +286,17 @@ class LatkFrame(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke(object):       
-    def __init__(self, _p, _c): # args float tuple array, float tuple 
-        self.points = [] # Vector
-        self.col = (1.0, 1.0, 1.0)
-        self.globalScale = 1.0
-        self.globalOffset = (0.0, 0.0, 0.0)
-        self.init(_p, _c)
+    def __init__(self, points, col): # args float tuple array, float tuple 
+        self.points = points
+        self.col = col
 
-    def init(self, _p, _c): # args float tuple, float tuple
-        setColor(_c)
-        setPoints(_p)
-    
-    def getColor(self): 
-        return self.col
-    
-    def setColor(self, _c): # float tuple
-        self.col = _c
-    
-    def getPoints(self):         
-        return self.points
-    
-    def setPoints(self, _p): # args float tuple array
-        self.points = _p
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+class LatkPoint(object):
+    def __init__(self, co, pressure=1.0, strength=1.0): # args float tuple, float, float
+        self.co = co
+        self.pressure = pressure
+        self.strength = strength
     
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
