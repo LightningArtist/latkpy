@@ -112,17 +112,31 @@ class Latk(object):
                 for jsonFrame in jsonLayer["frames"]:
                     frame = LatkFrame()
                     for jsonStroke in jsonFrame["strokes"]:                       
-                        r = float(jsonStroke["color"][0])
-                        g = float(jsonStroke["color"][1])
-                        b = float(jsonStroke["color"][2])
-                        col = (r,g,b)
+                        col = (1,1,1)
+                        try:
+                            r = float(jsonStroke["color"][0])
+                            g = float(jsonStroke["color"][1])
+                            b = float(jsonStroke["color"][2])
+                            col = (r,g,b)
+                        except:
+                            pass
                         
                         points = []
                         for jsonPoint in jsonStroke["points"]:
                             x = float(jsonPoint["co"][0])
                             y = float(jsonPoint["co"][1])
                             z = float(jsonPoint["co"][2])
-                            points.append(LatkPoint((x,y,z)))
+                            pressure = 1.0
+                            strength = 1.0
+                            try:
+                                pressure = jsonPoint["pressure"]
+                            except:
+                                pass
+                            try:
+                                strength = jsonPoint["strength"]
+                            except:
+                                pass
+                            points.append(LatkPoint((x,y,z), pressure, strength))
                                                 
                         stroke = LatkStroke(points, col)
                         frame.strokes.append(stroke)
@@ -167,15 +181,15 @@ class Latk(object):
                         sbb.append("\t\t\t\t\t\t\t\t},")
                     
                     sb.append("\n".join(sbb))
-                    
-                    sbFooter = []
-                    if (h == len(layer.frames) - 1): 
-                        sbFooter.append("\t\t\t\t\t\t\t]")
-                        sbFooter.append("\t\t\t\t\t\t}")
-                    else:
-                        sbFooter.append("\t\t\t\t\t\t\t]")
-                        sbFooter.append("\t\t\t\t\t\t},")
-                    sb.append("\n".join(sbFooter))
+                
+                sbFooter = []
+                if (h == len(layer.frames) - 1): 
+                    sbFooter.append("\t\t\t\t\t\t\t]")
+                    sbFooter.append("\t\t\t\t\t\t}")
+                else:
+                    sbFooter.append("\t\t\t\t\t\t\t]")
+                    sbFooter.append("\t\t\t\t\t\t},")
+                sb.append("\n".join(sbFooter))
             
             FINAL_LAYER_LIST.append("\n".join(sb))
         
