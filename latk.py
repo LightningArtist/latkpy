@@ -23,28 +23,9 @@ http://fox-gieg.com
 # limitations under the License.
 '''
 
-import math
-from math import sqrt
-#~
 import json
-import xml.etree.ElementTree as etree
-import base64
-#~
-import re
-#import parameter_editor
-import random
 import sys
-import gc
-import struct
-import uuid
-import contextlib
-from collections import defaultdict
-#from itertools import zip_longest
-from operator import itemgetter
-#~
-import os
 import zipfile
-import io
 from io import BytesIO
 #~
 import PIL.ImageDraw as ImageDraw
