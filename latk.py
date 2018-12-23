@@ -53,23 +53,13 @@ import PIL.Image as Image
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class Latk(object):     
-    def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, vector array, color tuple    
-        self.json # JSONObject 
-        self.jsonGp # JSONObject 
-        self.jsonLayer # JSONObject 
-        self.jsonFrame # JSONObject 
-        self.jsonStroke # JSONObject 
-        self.jsonPoint # JSONObject         
+    def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
-        self.jsonFilename = "layer_test"
-        self.currentLayer = 0
-        self.cleanMinPoints = 1
-        self.cleanMinLength = 0.1 
 
         if (fileName==None and latks==None and points==None): # new empty Latk
             self.layers.append(LatkLayer())
             self.layers[0].frames.append(LatkFrame())
-        elif (fileName==None and latks!=None and points==None): # merge array of latks
+        elif (fileName==None and latks!=None and points==None): # merge Latk array
             pass # TODO read with clear existing false
         elif (fileName==None and latks==None and points!=None): # 
             self.layers.append(LatkLayer())
@@ -82,7 +72,7 @@ class Latk(object):
     
         print("Latk strokes loaded.")
         
-    def getFileNameNoExt(self, s): # arg string, return string
+    def getFileNameNoExt(self, s): # args string, return string
         returns = ""
         temp = s.split(".")
         if (len(temp) > 1): 
@@ -90,56 +80,44 @@ class Latk(object):
                 if (i > 0):
                     returns += "."
                 returns += temp[i]
-                    else:
+        else:
             return s
-                return returns
-        
-    def getExtFromFileName(self, s): # arg string, returns string 
-        returns = ""
-        temp = s.split(Pattern.quote("."))
-        returns = temp[temp.length-1]
         return returns
         
-    def read(self, fileName, clearExisting=True): # arg string, bool
+    def getExtFromFileName(self, s): # args string, returns string 
+        returns = ""
+        temp = s.split(".")
+        returns = temp[len(temp)-1]
+        return returns
+        
+    def read(self, fileName, clearExisting=True): # args string, bool
+        data = None
+
         if (clearExisting == True):
             self.layers = []
         
-        if (getExtFromFileName(fileName) == "json"): 
-            json = loadJSONObject(fileName)
-        else: 
-            try 
-                String url = new File(dataPath(""), fileName).toString()
-                ZipFile zipFile = new ZipFile(url)
-            
-                InputStream stream = zipFile.getInputStream(zipFile.getEntry(getFileNameNoExt(fileName) + ".json"))
-    
-                String newLine = System.getProperty("line.separator")
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stream))
-                StringBuilder result = new StringBuilder()
-                boolean flag = False
-                for (String line (line = reader.readLine()) != null ) 
-                    result.append(flag? newLine: "").append(line)
-                    flag = True
-                                
-                json = parseJSONObject(result.toString())
-    
-                zipFile.close()
-            except:
-                pass
+        fileType = getExtFromFileName(fileName)
+        if (fileType == "latk" or fileType == "zip"):
+            imz = InMemoryZip()
+            imz.readFromDisk(url)
+            data = json.loads(imz.files[0].decode("utf-8"))        
+        else:
+            with open(fileName) as data_file:    
+                data = json.load(data_file)
                             
         for (int h=0 h<json.getJSONArray("grease_pencil").size() h++) 
-            jsonGp = (JSONObject) json.getJSONArray("grease_pencil").get(h)
+            jsonGp = json.getJSONArray("grease_pencil").get(h)
             
             for (int i=0 i<jsonGp.getJSONArray("layers").size() i++) 
                 layers.append(new LatkLayer())
                 
-                jsonLayer = (JSONObject) jsonGp.getJSONArray("layers").get(i)
+                jsonLayer = jsonGp.getJSONArray("layers").get(i)
                 for (int j=0 j<jsonLayer.getJSONArray("frames").size() j++) 
                     layers.get(layers.size()-1).frames.append(new LatkFrame())
 
-                    jsonFrame = (JSONObject) jsonLayer.getJSONArray("frames").get(j)
+                    jsonFrame = jsonLayer.getJSONArray("frames").get(j)
                     for (int l=0 l<jsonFrame.getJSONArray("strokes").size() l++) 
-                        jsonStroke = (JSONObject) jsonFrame.getJSONArray("strokes").get(l)
+                        jsonStroke = jsonFrame.getJSONArray("strokes").get(l)
                         
                         int r = int(255.0 * jsonStroke.getJSONArray("color").getFloat(0))
                         int g = int(255.0 * jsonStroke.getJSONArray("color").getFloat(1))
@@ -148,7 +126,7 @@ class Latk(object):
                         
                         ArrayList<PVector> pts = new ArrayList<PVector>()
                         for (int m=0 m<jsonStroke.getJSONArray("points").size() m++) 
-                            jsonPoint = (JSONObject) jsonStroke.getJSONArray("points").get(m)
+                            jsonPoint = jsonStroke.getJSONArray("points").get(m)
                             PVector p = new PVector(jsonPoint.getJSONArray("co").getFloat(0), jsonPoint.getJSONArray("co").getFloat(1), jsonPoint.getJSONArray("co").getFloat(2))
                             pts.append(p)#.mult(globalScale))
                                                 
@@ -156,60 +134,58 @@ class Latk(object):
                         st.globalScale = globalScale
                         layers.get(layers.size()-1).frames.get(layers.get(layers.size()-1).frames.size()-1).strokes.append(st)
                                                                 
-    def write(self, fileName) # arg string
+    def write(self, fileName) # args string
         FINAL_LAYER_LIST = [] # string array
 
-        for currentLayer in layers:
-            ArrayList<String> sb = new ArrayList<String>()
-            ArrayList<String> sbHeader = new ArrayList<String>()
+        for layer in layers:
+            sb = [] # string array
+            sbHeader = [] # string array
             sbHeader.append("\t\t\t\t\t\"frames\":[")
             sb.append(String.join("\n", sbHeader.toArray(new String[sbHeader.size()])))
 
-            for (int h = 0 h < layers.get(currentLayer).frames.size() h++) 
-                    layers.get(currentLayer).currentFrame = h
+            for frame in layer.frames:
+                sbbHeader = [] # string array
+                sbbHeader.append("\t\t\t\t\t\t")
+                sbbHeader.append("\t\t\t\t\t\t\t\"strokes\":[")
+                sb.append(String.join("\n", sbbHeader.toArray(new String[sbbHeader.size()])))
+                for stroke in frame.strokes:
+                    sbb = [] # string array
+                    sbb.append("\t\t\t\t\t\t\t\t")
+                    color col = layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).col
+                    float r = roundVal(red(col) / 255.0, 5)
+                    float g = roundVal(green(col) / 255.0, 5)
+                    float b = roundVal(blue(col) / 255.0, 5)
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + r + ", " + g + ", " + b + "],")
 
-                    ArrayList<String> sbbHeader = new ArrayList<String>()
-                    sbbHeader.append("\t\t\t\t\t\t")
-                    sbbHeader.append("\t\t\t\t\t\t\t\"strokes\":[")
-                    sb.append(String.join("\n", sbbHeader.toArray(new String[sbbHeader.size()])))
-                    for (int i = 0 i < layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.size() i++) 
-                            ArrayList<String> sbb = new ArrayList<String>()
-                            sbb.append("\t\t\t\t\t\t\t\t")
-                            color col = layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.get(i).col
-                            float r = rounder(red(col) / 255.0, 5)
-                            float g = rounder(green(col) / 255.0, 5)
-                            float b = rounder(blue(col) / 255.0, 5)
-                            sbb.append("\t\t\t\t\t\t\t\t\t\"color\":[" + r + ", " + g + ", " + b + "],")
-
-                            if (layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.get(i).points.size() > 0) 
-                                    sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
-                                    for (int j = 0 j < layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.get(i).points.size() j++) 
-                                            PVector pt = layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.get(i).points.get(j)
-                                            #pt.mult(1.0/globalScale)
-                                            
-                                            if (j == layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.get(i).points.size() - 1) 
-                                                    sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1}")
-                                                    sbb.append("\t\t\t\t\t\t\t\t\t]")
-                                            else:
-                                                    sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1},")
-                                                                                                                    else:
-                                    sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
-                            
-                            if (i == layers.get(currentLayer).frames.get(layers.get(currentLayer).currentFrame).strokes.size() - 1) 
-                                    sbb.append("\t\t\t\t\t\t\t\t}")
-                            else:
-                                    sbb.append("\t\t\t\t\t\t\t\t},")
-                            
-                            sb.append(String.join("\n", sbb.toArray(new String[sbb.size()])))
+                    if (layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() > 0) 
+                            sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[")
+                            for (int j = 0 j < layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() j++) 
+                                    PVector pt = layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.get(j)
+                                    #pt.mult(1.0/globalScale)
+                                    
+                                    if (j == layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.get(i).points.size() - 1) 
+                                            sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1}")
+                                            sbb.append("\t\t\t\t\t\t\t\t\t]")
+                                    else:
+                                            sbb.append("\t\t\t\t\t\t\t\t\t\t\"co\":[" + pt.x + ", " + pt.y + ", " + pt.z + "], \"pressure\":1, \"strength\":1},")
+                                                                                                            else:
+                            sbb.append("\t\t\t\t\t\t\t\t\t\"points\":[]")
+                    
+                    if (i == layers.get(layer).frames.get(layers.get(layer).currentFrame).strokes.size() - 1) 
+                        sbb.append("\t\t\t\t\t\t\t\t}")
+                    else:
+                        sbb.append("\t\t\t\t\t\t\t\t},")
+                    
+                    sb.append(String.join("\n", sbb.toArray(new String[sbb.size()])))
                     
                     ArrayList<String> sbFooter = new ArrayList<String>()
-                    if (h == layers.get(currentLayer).frames.size() - 1): 
-                            sbFooter.append("\t\t\t\t\t\t\t]")
-                            sbFooter.append("\t\t\t\t\t\t}")
+                    if (h == layers.get(layer).frames.size() - 1): 
+                        sbFooter.append("\t\t\t\t\t\t\t]")
+                        sbFooter.append("\t\t\t\t\t\t}")
                     else:
-                            sbFooter.append("\t\t\t\t\t\t\t]")
-                            sbFooter.append("\t\t\t\t\t\t},")
-                                            sb.append(String.join("\n", sbFooter.toArray(new String[sbFooter.size()])))
+                        sbFooter.append("\t\t\t\t\t\t\t]")
+                        sbFooter.append("\t\t\t\t\t\t},")
+                    sb.append(String.join("\n", sbFooter.toArray(new String[sbFooter.size()])))
             
             FINAL_LAYER_LIST.append(String.join("\n", sb.toArray(new String[sb.size()])))
         
@@ -220,17 +196,17 @@ class Latk(object):
         s.append("\t\t")
         s.append("\t\t\t\"layers\":[")
 
-        for currentLayer in layers:
+        for layer in layers:
             s.append("\t\t\t\t")
-            if (layers.get(currentLayer).name != null && layers.get(currentLayer).name != ""): 
-                s.append("\t\t\t\t\t\"name\": \"" + layers.get(currentLayer).name + "\",")
+            if (layers.get(layer).name != null && layers.get(layer).name != ""): 
+                s.append("\t\t\t\t\t\"name\": \"" + layers.get(layer).name + "\",")
             else:
-                s.append("\t\t\t\t\t\"name\": \"UnityLayer " + (currentLayer + 1) + "\",")
+                s.append("\t\t\t\t\t\"name\": \"UnityLayer " + (layer + 1) + "\",")
                 
-                s.append(FINAL_LAYER_LIST.get(currentLayer))
+                s.append(FINAL_LAYER_LIST.get(layer))
 
                 s.append("\t\t\t\t\t]")
-                if (currentLayer < layers.size() - 1): 
+                if (layer < layers.size() - 1): 
                     s.append("\t\t\t\t},")
                 else:
                     s.append("\t\t\t\t}")
@@ -238,62 +214,69 @@ class Latk(object):
         s.append("                }")
         s.append("        ]")
         s.append("}")
-
-        url = sketchPath("") + fileName # string
         
-        if (getExtFromFileName(fileName).equals("json")) 
-            saveStrings(url, s.toArray(new String[s.size()]))
-        else:            
-            try: 
-                File f = new File(url)
-                ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f))
-                ZipEntry e = new ZipEntry(getFileNameNoExt(fileName) + ".json")
-                out.putNextEntry(e)
-                
-                byte[] data = String.join("\n", s.toArray(new String[s.size()])).getBytes()
-                out.write(data, 0, data.length)
-                out.closeEntry()
-                
-                out.close()
-            except:
-              pass
+        fileType = getExtFromFileName(fileName)
+        if (fileType == "latk" or fileType == "zip"):
+            fileNameNoExt = getFileNameNoExt(fileName)
+            imz = InMemoryZip()
+            imz.append(fileNameNoExt + ".json", "\n".join(s))
+            imz.writetofile(fileName)            
+        else:
+            with open(fileName, "w") as f:
+                f.write("\n".join(s))
+                f.closed
                              
-    def clean(self): 
+    def clean(self, cleanMinPoints = 1, cleanMinLength = 0.1): 
         for layer in layers:
             for frame in layer.frames: 
                 for stroke in frame.strokes:
                     # 1. Remove the stroke if it has too few points.
-                    if (stroke.points.size() < cleanMinPoints) 
-                        frame.strokes.remove(k)
+                    if (len(stroke.points) < cleanMinPoints) 
+                        frame.strokes.remove(stroke)
                     else:
-                        float totalLength = 0.0
-                        for (int l=1 l<stroke.points.size() l++) 
-                            PVector p1 = stroke.points.get(l)
-                            PVector p2 = stroke.points.get(l-1)
+                        totalLength = 0.0
+                        for i in range(1, len(stroke.points)): 
+                            p1 = stroke.points[i] # float tuple
+                            p2 = stroke.points[i-1] # float tuple
                             # 2. Remove the point if it's a duplicate.
                             if (hitDetect3D(p1, p2, 0.1)) 
-                                stroke.points.remove(l)
+                                stroke.points.remove(points[i])
                             else:
-                                totalLength += PVector.dist(p1, p2)
-                                                                            # 3. Remove the stroke if its length is too small.
+                                totalLength += getDistance(p1, p2)
+                        # 3. Remove the stroke if its length is too small.
                         if (totalLength < cleanMinLength) 
-                            frame.strokes.remove(k)
+                            frame.strokes.remove(stroke)
                         else:
                             # 4. Finally, check the number of points again.
-                            if (stroke.points.size() < cleanMinPoints) 
-                                frame.strokes.remove(k)
-                                                                                                                
-    def hitDetect3D(self, p1, p2, s) # arg vector, vector, float; return boolean   
-        if (PVector.dist(p1, p2) < s) 
+                            if (len(stroke.points) < cleanMinPoints) 
+                                frame.strokes.remove(stroke)
+    
+    def getDistance(v1, v2):
+        return sqrt( (v1[0] - v2[0])**2 + (v1[1] - v2[1])**2 + (v1[2] - v2[2])**2)
+
+    def hitDetect3D(p1, p2, hitbox=0.01):
+        if (getDistance(p1, p2) <= hitbox):
             return True
         else:
             return False
              
-    def rounder(self, _val, _places) # arg float, float; return float
-        _val *= pow(10,_places)
-        _val = round(_val)
-        _val /= pow(10,_places)
-        return _val
+    def roundVal(a, b):
+        formatter = "{0:." + str(b) + "f}"
+        return formatter.format(a)
+
+    def roundValInt(a):
+        formatter = "{0:." + str(0) + "f}"
+        return int(formatter.format(a))
+
+    def writeTextFile(name="test.txt", lines=None):
+        file = open(name,"w") 
+        for line in lines:
+            file.write(line) 
+        file.close() 
+
+    def readTextFile(name="text.txt"):
+        file = open(name, "r") 
+        return file.read() 
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
@@ -301,7 +284,7 @@ class LatkLayer(object):
     def __init__(self):    
         self.frames = [] # LatkFrame
         self.currentFrame = 0
-        self.name = "P5layer"
+        self.name = "layer"
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
@@ -313,264 +296,29 @@ class LatkFrame(object):
 
 class LatkStroke(object):       
     def __init__(self, ArrayList<PVector> _p, color _c): 
-        self.PShape s
         self.points = [] # Vector
-        self.color col = color(255)
-        self.float globalScale = 1
-        self.PVector globalOffset = new PVector(0,0,0)
+        self.col = (1.0, 1.0, 1.0)
+        self.globalScale = 1.0
+        self.globalOffset = (0.0, 0.0, 0.0)
         self.init(_p, _c)
 
-    def init(self, ArrayList<PVector> _p, color _c) 
+    def init(self, _p, _c): # args float tuple, float tuple
         setColor(_c)
         setPoints(_p)
     
     def getColor(self): 
-        return s.getStroke(0)
+        return self.col
     
-    def setColor(self, color _c): 
-        col = _c
+    def setColor(self, _c): # float tuple
+        self.col = _c
     
-    def getPoints(self): 
-        ArrayList<PVector> points = new ArrayList<PVector>()
-        for (int i=0 i<s.getVertexCount() i++) 
-            points.append(s.getVertex(i))
-        
-        return points
+    def getPoints(self):         
+        return self.points
     
-    def setPoints(self, _p): # arg vector array
-        s = createShape()
-        s.beginShape()
-        s.noFill()
-        s.stroke(col)
-        s.strokeWeight(2)
-        for (int i=0 i<_p.size() i++) 
-            PVector pt = _p.get(i)
-            s.vertex(pt.z, -pt.y, pt.x)
-        
-        s.endShape()
-        points = _p
+    def setPoints(self, _p): # args float tuple array
+        self.points = _p
     
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-def writeTextFile(name="test.txt", lines=None):
-    file = open(name,"w") 
-    for line in lines:
-        file.write(line) 
-    file.close() 
-
-def readTextFile(name="text.txt"):
-    file = open(name, "r") 
-    return file.read() 
-
-def getFilePath(stripFileName=True):
-    name = bpy.context.blend_data.filepath
-    if (stripFileName==True):
-        name = name[:-len(getFileName(stripExtension=False))]
-    return name
-
-def getFileName(stripExtension=True):
-    name = bpy.path.basename(bpy.context.blend_data.filepath)
-    if (stripExtension==True):
-        name = name[:-6]
-    return name
-
-'''
-# http://blender.stackexchange.com/questions/24694/query-grease-pencil-strokes-from-python
-def writeBrushStrokes(filepath=None, bake=True, roundValues=True, numPlaces=7, zipped=False):
-    url = filepath # compatibility with gui keywords
-    #~
-    if(bake == True):
-        bakeFrames()
-    gp = bpy.context.scene.grease_pencil
-    globalScale = Vector((0.1, 0.1, 0.1))
-    globalOffset = Vector((0, 0, 0))
-    useScaleAndOffset = True
-    #numPlaces = 7
-    #roundValues = True
-    palette = getActivePalette()
-    #~
-    sg = []
-    sg.append("{")
-    sg.append("\t\"creator\": \"blender\",")
-    sg.append("\t\"grease_pencil\": [")
-    sg.append("\t\t{")
-    sg.append("\t\t\t\"frame_rate\": " + str(getSceneFps()) + ",")
-    sg.append("\t\t\t\"layers\": [")
-    #~
-    sl = []
-    for f, layer in enumerate(gp.layers):
-        sb = []
-        for h, frame in enumerate(layer.frames):
-            currentFrame = h
-            goToFrame(h)
-            sb.append("\t\t\t\t\t\t{") # one frame
-            sb.append("\t\t\t\t\t\t\t\"frame_number\": " + str(frame.frame_number) + ",")
-            if (layer.parent):
-                sb.append("\t\t\t\t\t\t\t\"parent_location\": " + "[" + str(layer.parent.location[0]) + ", " + str(layer.parent.location[1]) + ", " + str(layer.parent.location[2]) + "],")
-            sb.append("\t\t\t\t\t\t\t\"strokes\": [")
-            if (len(frame.strokes) > 0):
-                sb.append("\t\t\t\t\t\t\t\t{") # one stroke
-                for i, stroke in enumerate(frame.strokes):
-                    color = (0,0,0)
-                    alpha = 0.9
-                    fill_color = (1,1,1)
-                    fill_alpha = 0.0
-                    try:
-                        col = palette.colors[stroke.colorname]
-                        color = col.color
-                        alpha = col.alpha 
-                        fill_color = col.fill_color
-                        fill_alpha = col.fill_alpha
-                    except:
-                        pass
-                    sb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(color[0]) + ", " + str(color[1]) + ", " + str(color[2])+ "],")
-                    sb.append("\t\t\t\t\t\t\t\t\t\"alpha\": " + str(alpha) + ",")
-                    sb.append("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + str(fill_color[0]) + ", " + str(fill_color[1]) + ", " + str(fill_color[2])+ "],")
-                    sb.append("\t\t\t\t\t\t\t\t\t\"fill_alpha\": " + str(fill_alpha) + ",")
-                    sb.append("\t\t\t\t\t\t\t\t\t\"points\": [")
-                    for j, point in enumerate(stroke.points):
-                        x = point.co.x
-                        y = point.co.z
-                        z = point.co.y
-                        pressure = 1.0
-                        pressure = point.pressure
-                        strength = 1.0
-                        strength = point.strength
-                        #~
-                        if useScaleAndOffset == True:
-                            x = (x * globalScale.x) + globalOffset.x
-                            y = (y * globalScale.y) + globalOffset.y
-                            z = (z * globalScale.z) + globalOffset.z
-                        #~
-                        if roundValues == True:
-                            sb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + roundVal(x, numPlaces) + ", " + roundVal(y, numPlaces) + ", " + roundVal(z, numPlaces) + "], \"pressure\": " + roundVal(pressure, numPlaces) + ", \"strength\": " + roundVal(strength, numPlaces))
-                        else:
-                            sb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(x) + ", " + str(y) + ", " + str(z) + "], \"pressure\": " + str(pressure) + ", \"strength\": " + str(strength))                  
-                        #~
-                        if j == len(stroke.points) - 1:
-                            sb[len(sb)-1] +="}"
-                            sb.append("\t\t\t\t\t\t\t\t\t]")
-                            if (i == len(frame.strokes) - 1):
-                                sb.append("\t\t\t\t\t\t\t\t}") # last stroke for this frame
-                            else:
-                                sb.append("\t\t\t\t\t\t\t\t},") # end stroke
-                                sb.append("\t\t\t\t\t\t\t\t{") # begin stroke
-                        else:
-                            sb[len(sb)-1] += "},"
-                    if i == len(frame.strokes) - 1:
-                        sb.append("\t\t\t\t\t\t\t]")
-            else:
-                sb.append("\t\t\t\t\t\t\t]")
-            if h == len(layer.frames) - 1:
-                sb.append("\t\t\t\t\t\t}")
-            else:
-                sb.append("\t\t\t\t\t\t},")
-        #~
-        sf = []
-        sf.append("\t\t\t\t{") 
-        sf.append("\t\t\t\t\t\"name\": \"" + layer.info + "\",")
-        if (layer.parent):
-            sf.append("\t\t\t\t\t\"parent\": \"" + layer.parent.name + "\",")
-        sf.append("\t\t\t\t\t\"frames\": [")
-        sf.append("\n".join(sb))
-        sf.append("\t\t\t\t\t]")
-        if (f == len(gp.layers)-1):
-            sf.append("\t\t\t\t}")
-        else:
-            sf.append("\t\t\t\t},")
-        sl.append("\n".join(sf))
-        #~
-    sg.append("\n".join(sl))
-    sg.append("\t\t\t]")
-    sg.append("\t\t}")
-    sg.append("\t]")
-    sg.append("}")
-    #~
-    if (zipped == True):
-        filenameRaw = os.path.split(url)[1].split(".")
-        filename = ""
-        for i in range(0, len(filenameRaw)-1):
-            filename += filenameRaw[i]
-        imz = InMemoryZip()
-        imz.append(filename + ".json", "\n".join(sg))
-        imz.writetofile(url)
-    else:
-        with open(url, "w") as f:
-            f.write("\n".join(sg))
-            f.closed
-    print("Wrote " + url)
-    #~                
-    return {'FINISHED'}
-    
-def readBrushStrokes(filepath=None, resizeTimeline=True):
-    url = filepath # compatibility with gui keywords
-    #~
-    gp = getActiveGp()
-    #~
-    useScaleAndOffset = True
-    globalScale = Vector((10, 10, 10))
-    globalOffset = Vector((0, 0, 0))
-    #~
-    data = None
-
-    filename = os.path.split(url)[1].split(".")
-    filetype = filename[len(filename)-1].lower()
-    if (filetype == "latk" or filetype == "zip"):
-        imz = InMemoryZip()
-        imz.readFromDisk(url)
-        # https://stackoverflow.com/questions/6541767/python-urllib-error-attributeerror-bytes-object-has-no-attribute-read/6542236
-        data = json.loads(imz.files[0].decode("utf-8"))        
-    else:
-        with open(url) as data_file:    
-            data = json.load(data_file)
-    #~
-    longestFrameNum = 1
-    for layerJson in data["grease_pencil"][0]["layers"]:
-        layer = gp.layers.new(layerJson["name"], set_active=True)
-        palette = getActivePalette()    
-        #~
-        for i, frameJson in enumerate(layerJson["frames"]):
-            try:
-            	frame = layer.frames.new(layerJson["frames"][i]["frame_number"]) 
-            except:
-            	frame = layer.frames.new(i) 
-            if (frame.frame_number > longestFrameNum):
-                longestFrameNum = frame.frame_number
-            for strokeJson in frameJson["strokes"]:
-                strokeColor = (0,0,0)
-                try:
-                    colorJson = strokeJson["color"]
-                    strokeColor = (colorJson[0], colorJson[1], colorJson[2])
-                except:
-                    pass
-                createColor(strokeColor)
-                stroke = frame.strokes.new(getActiveColor().name)
-                stroke.draw_mode = "3DSPACE" # either of ("SCREEN", "3DSPACE", "2DSPACE", "2DIMAGE")
-                pointsJson = strokeJson["points"]
-                stroke.points.append(len(pointsJson)) # add 4 points
-                for l, pointJson in enumerate(pointsJson):
-                    coJson = pointJson["co"] 
-                    x = coJson[0]
-                    y = coJson[2]
-                    z = coJson[1]
-                    pressure = 1.0
-                    strength = 1.0
-                    if (useScaleAndOffset == True):
-                        x = (x * globalScale.x) + globalOffset.x
-                        y = (y * globalScale.y) + globalOffset.y
-                        z = (z * globalScale.z) + globalOffset.z
-                    #~
-                    if ("pressure" in pointJson):
-                        pressure = pointJson["pressure"]
-                    if ("strength" in pointJson):
-                        strength = pointJson["strength"]
-                    #stroke.points[l].co = (x, y, z)
-                    createPoint(stroke, l, (x, y, z), pressure, strength)
-    #~  
-    if (resizeTimeline == True):
-        setStartEnd(0, longestFrameNum, pad=False)              
-    return {'FINISHED'}
-'''
 
 class InMemoryZip(object):
 
@@ -611,6 +359,7 @@ class InMemoryZip(object):
         f.write(self.readFromMemory())
         f.close()
 
+# * * * * * * * * * * * * * * * * * * * * * * * * * *
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
