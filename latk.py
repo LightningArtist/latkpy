@@ -24,7 +24,6 @@ http://fox-gieg.com
 '''
 
 import json
-import sys
 import zipfile
 from io import BytesIO
 #~
