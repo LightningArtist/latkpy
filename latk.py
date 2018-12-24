@@ -26,20 +26,12 @@ http://fox-gieg.com
 import json
 import zipfile
 from io import BytesIO
-#~
-import PIL.ImageDraw as ImageDraw
-import PIL.Image as Image
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class Latk(object):     
     def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
-        # Pillow
-        self.width = 1024
-        self.height = 1024
-        self.image = self.createImage(self.width, self.height)
-        self.draw = self.createDraw(self.image)
 
         if (fileName==None and latks==None and points==None): # new empty Latk
             self.layers.append(LatkLayer())
@@ -54,12 +46,6 @@ class Latk(object):
             self.layers[0].frames[0].strokes.append(stroke)
         else: # load from url
             self.read(fileName, True)
-    
-    def createImage(self, _width, _height):
-        return Image.new("RGB", (_width, _height))
-
-    def createDraw(self, _image):
-        return ImageDraw.Draw(_image)
 
     def getFileNameNoExt(self, s): # args string, return string
         returns = ""
@@ -78,24 +64,6 @@ class Latk(object):
         temp = s.split(".")
         returns = temp[len(temp)-1]
         return returns
-        
-    def render(self):
-        for layer in self.layers:
-            for frame in layer.frames:
-                for stroke in frame.strokes:
-                    r = int(stroke.col[0] * 255)
-                    g = int(stroke.col[1] * 255)
-                    b = int(stroke.col[2] * 255)
-                    col = (r,g,b)
-
-                    points = []
-                    for point in stroke.points:
-                        x = int(self.width/2) + int(point.co[2] * self.width/2)
-                        y = int(self.height/2) - int(point.co[1] * self.height/2)
-                        points.append((x,y))
-                    if (len(points) > 1):
-                        self.draw.polygon(points, outline=col)
-        self.image.show()
 
     def read(self, fileName, clearExisting=True): # args string, bool
         data = None
@@ -217,7 +185,7 @@ class Latk(object):
             s.append(FINAL_LAYER_LIST[i])
 
             s.append("\t\t\t\t\t]")
-            if (layer < len(self.layers) - 1): 
+            if (i < len(self.layers) - 1): 
                 s.append("\t\t\t\t},")
             else:
                 s.append("\t\t\t\t}")

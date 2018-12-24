@@ -3,8 +3,8 @@
 cd %~dp0
 
 set INPUT=%1
-set OUTPUT=%~dp1
+set OUTPUT=test.latk
 
-python latk_viz.py -- %INPUT% %OUTPUT%\test.latk
+python latk_viz.py -- %INPUT% %OUTPUT%
 
 @pause
