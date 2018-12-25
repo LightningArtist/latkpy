@@ -244,7 +244,72 @@ class Latk(object):
                                     frame.strokes.remove(stroke)
                                 except:
                                     pass
-                                    
+
+    def smoothStroke(self, stroke):
+        points = stroke.points
+        #~
+        weight = 18
+        scale = 1.0 / (weight + 2)
+        nPointsMinusTwo = len(points) - 2
+        lower = 0
+        upper = 0
+        center = 0
+        #~
+        for i in range(1, nPointsMinusTwo):
+            lower = points[i-1].co
+            center = points[i].co
+            upper = points[i+1].co
+            #~
+            x = (lower[0] + weight * center[0] + upper[0]) * scale
+            y = (lower[1] + weight * center[1] + upper[1]) * scale
+            z = (lower[2] + weight * center[2] + upper[2]) * scale
+            center = (x, y, z)
+        
+    def splitStroke(self, stroke): 
+        points = stroke.points
+        co = []
+        pressure = []
+        strength = []
+        #~
+        for i in range(1, len(points), 2):
+            center = (points[i].co[0], points[i].co[1], points[i].co[2])
+            lower = (points[i-1].co[0], points[i-1].co[1], points[i-1].co[2])
+            x = (center[0] + lower[0]) / 2
+            y = (center[1] + lower[1]) / 2
+            z = (center[2] + lower[2]) / 2
+            p = (x, y, z)
+            #~
+            co.append(lower)
+            co.append(p)
+            co.append(center)
+            #~
+            pressure.append(points[i-1].pressure)
+            pressure.append((points[i-1].pressure + points[i].pressure) / 2)
+            pressure.append(points[i].pressure)
+            #~
+            strength.append(points[i-1].strength)
+            strength.append((points[i-1].strength + points[i].strength) / 2)
+            strength.append(points[i].strength)
+        #~
+        for i in range(len(co), len(points)):
+            pt = LatkPoint(co[i], pressure[i], strength[i])
+            stroke.points.insert(i, pt)
+
+    def refine(self, splitReps=2, smoothReps=10, doClean=True):
+        if (doClean==True):
+            self.clean()
+        for layer in self.layers:
+            for frame in layer.frames: 
+                for stroke in frame.strokes:   
+                    points = stroke.points
+                    #~
+                    for i in range(0, splitReps):
+                        self.splitStroke(stroke)  
+                        self.smoothStroke(stroke)  
+                    #~
+                    for i in range(0, smoothReps - splitReps):
+                        self.smoothStroke(stroke)    
+
     def setStroke(self, stroke):
         lastLayer = self.layers[len(self.layers)-1]
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
