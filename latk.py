@@ -26,6 +26,7 @@ http://fox-gieg.com
 import json
 import zipfile
 from io import BytesIO
+from math import sqrt
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -205,30 +206,45 @@ class Latk(object):
                 f.write("\n".join(s))
                 f.closed
                              
-    def clean(self, cleanMinPoints = 1, cleanMinLength = 0.1): 
-        for layer in layers:
+    def clean(self, cleanMinPoints = 2, cleanMinLength = 0.1):
+        if (cleanMinPoints < 2):
+            cleanMinPoints = 2 
+        for layer in self.layers:
             for frame in layer.frames: 
                 for stroke in frame.strokes:
                     # 1. Remove the stroke if it has too few points.
                     if (len(stroke.points) < cleanMinPoints): 
-                        frame.strokes.remove(stroke)
+                        try:
+                            frame.strokes.remove(stroke)
+                        except:
+                            pass
                     else:
                         totalLength = 0.0
                         for i in range(1, len(stroke.points)): 
                             p1 = stroke.points[i] # float tuple
                             p2 = stroke.points[i-1] # float tuple
                             # 2. Remove the point if it's a duplicate.
-                            if (hitDetect3D(p1.co, p2.co, 0.1)): 
-                                stroke.points.remove(points[i])
+                            if (self.hitDetect3D(p1.co, p2.co, 0.1)): 
+                                try:
+                                    stroke.points.remove(stroke)
+                                except:
+                                    pass
                             else:
-                                totalLength += getDistance(p1.co, p2.co)
+                                totalLength += self.getDistance(p1.co, p2.co)
                         # 3. Remove the stroke if its length is too small.
                         if (totalLength < cleanMinLength): 
-                            frame.strokes.remove(stroke)
+                            try:
+                                frame.strokes.remove(stroke)
+                            except:
+                                pass
                         else:
                             # 4. Finally, check the number of points again.
                             if (len(stroke.points) < cleanMinPoints): 
-                                frame.strokes.remove(stroke)
+                                try:
+                                    frame.strokes.remove(stroke)
+                                except:
+                                    pass
+                                    
     def setStroke(self, stroke):
         lastLayer = self.layers[len(self.layers)-1]
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
@@ -247,7 +263,7 @@ class Latk(object):
         return sqrt( (v1[0] - v2[0])**2 + (v1[1] - v2[1])**2 + (v1[2] - v2[2])**2)
 
     def hitDetect3D(self, p1, p2, hitbox=0.01):
-        if (getDistance(p1, p2) <= hitbox):
+        if (self.getDistance(p1, p2) <= hitbox):
             return True
         else:
             return False
