@@ -365,6 +365,7 @@ class LatkLayer(object):
 class LatkFrame(object):   
     def __init__(self):    
         self.strokes = [] # LatkStroke
+        self.index = 0
         
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
@@ -384,6 +385,18 @@ class LatkStroke(object):
         returns = []
         for point in self.points:
             returns.append(point.co)
+        return returns
+
+    def getPressures(self):
+        returns = []
+        for point in self.points:
+            returns.append(point.pressure)
+        return returns
+
+    def getStrengths(self):
+        returns = []
+        for point in self.points:
+            returns.append(point.strength)
         return returns
 
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
