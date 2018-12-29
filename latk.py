@@ -359,13 +359,14 @@ class LatkLayer(object):
             name = "layer"   
         self.frames = [] # LatkFrame
         self.name = name
+        self.locked = False
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkFrame(object):   
     def __init__(self):    
         self.strokes = [] # LatkStroke
-        self.index = 0
+        self.frame_number = 0
         
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
