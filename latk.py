@@ -31,8 +31,9 @@ from math import sqrt
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class Latk(object):     
-    def __init__(self, fileName=None, latks=None, points=None, color=None): # args string, Latk array, float tuple array, float tuple           
+    def __init__(self, fileName=None, latks=None, points=None, coloror=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
+        self.frame_rate = 12
 
         if (fileName==None and latks==None and points==None): # new empty Latk
             self.layers.append(LatkLayer())
@@ -88,12 +89,12 @@ class Latk(object):
                 for jsonFrame in jsonLayer["frames"]:
                     frame = LatkFrame()
                     for jsonStroke in jsonFrame["strokes"]:                       
-                        col = (1,1,1)
+                        color = (1,1,1)
                         try:
-                            r = float(jsonStroke["color"][0])
-                            g = float(jsonStroke["color"][1])
-                            b = float(jsonStroke["color"][2])
-                            col = (r,g,b)
+                            r = float(jsonStroke["coloror"][0])
+                            g = float(jsonStroke["coloror"][1])
+                            b = float(jsonStroke["coloror"][2])
+                            color = (r,g,b)
                         except:
                             pass
                         
@@ -114,7 +115,7 @@ class Latk(object):
                                 pass
                             points.append(LatkPoint((x,y,z), pressure, strength))
                                                 
-                        stroke = LatkStroke(points, col)
+                        stroke = LatkStroke(points, color)
                         frame.strokes.append(stroke)
                     layer.frames.append(frame)
                 self.layers.append(layer)
@@ -137,8 +138,8 @@ class Latk(object):
                 for i, stroke in enumerate(frame.strokes):
                     sbb = [] # string array
                     sbb.append("\t\t\t\t\t\t\t\t{")
-                    col = stroke.col
-                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(col[0]) + ", " + str(col[1]) + ", " + str(col[2]) + "],")
+                    color = stroke.color
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"coloror\": [" + str(color[0]) + ", " + str(color[1]) + ", " + str(color[2]) + "],")
 
                     if (len(stroke.points) > 0): 
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": [")
@@ -315,13 +316,13 @@ class Latk(object):
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
         lastFrame.strokes.append(stroke)
 
-    def setPoints(self, points, col=None):
+    def setPoints(self, points, color=None):
         lastLayer = self.layers[len(self.layers)-1]
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
         stroke = LatkStroke()
         stroke.setPoints(points)
-        if (col != None):
-            stroke.col = col
+        if (color != None):
+            stroke.color = color
         lastFrame.strokes.append(stroke)
     
     def getDistance(self, v1, v2):
@@ -354,33 +355,46 @@ class Latk(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer(object):    
-    def __init__(self, name=None): 
+    def __init__(self, name=None, frames=None): 
         if not name:
             name = "layer"   
-        self.frames = [] # LatkFrame
+        if not frames:
+            self.frames = [] # LatkFrame
+        else:
+            self.frames = frames
         self.name = name
-        self.locked = False
+        self.parent = None
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkFrame(object):   
-    def __init__(self):    
-        self.strokes = [] # LatkStroke
+    def __init__(self, strokes=None): 
+        if not strokes:   
+            self.strokes = [] # LatkStroke
+        else:
+            self.strokes = strokes
         self.frame_number = 0
+        self.parent_location = (0.0,0.0,0.0)
         
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke(object):       
-    def __init__(self, points=None, col=(1.0,1.0,1.0)): # args float tuple array, float tuple 
-        self.points = points
-        self.col = col
+    def __init__(self, points=None, color=(1.0,1.0,1.0)): # args float tuple array, float tuple 
+        if not points:
+            self.points = []
+        else:
+            self.points = points
+        self.color = color
+        self.alpha = 1.0
+        self.fill_color = color
+        self.fill_alpha = 0.0
 
-    def setPoints(self, points, col=None):
+    def setPoints(self, points, color=None):
         self.points = []
         for point in points:
             self.points.append(LatkPoint(point))
-        if (col != None):
-            self.col = col
+        if (color != None):
+            self.color = color
 
     def getPoints(self):
         returns = []
