@@ -31,23 +31,21 @@ from math import sqrt
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class Latk(object):     
-    def __init__(self, fileName=None, latks=None, points=None, coloror=None): # args string, Latk array, float tuple array, float tuple           
+    def __init__(self, fileName=None, init=False, coords=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
         self.frame_rate = 12
 
-        if (fileName==None and latks==None and points==None): # new empty Latk
-            self.layers.append(LatkLayer())
-            self.layers[0].frames.append(LatkFrame())
-        elif (fileName==None and latks!=None and points==None): # merge Latk array
-            pass # TODO read multiple times without clearing
-        elif (fileName==None and latks==None and points!=None): # 
-            self.layers.append(LatkLayer())
-            self.layers[0].frames.append(LatkFrame())
-            
-            stroke = LatkStroke(_pts, _c)
-            self.layers[0].frames[0].strokes.append(stroke)
-        else: # load from url
+        if (fileName != None):
             self.read(fileName, True)
+        elif (init == True):
+            self.layers.append(LatkLayer())
+            self.layers[0].frames.append(LatkFrame())
+            if (coords != None): # 
+                stroke = LatkStroke()
+                stroke.setCoords(coords)
+                if (color != None):
+                    stroke.color = color
+                self.layers[0].frames[0].strokes.append(stroke)            
 
     def getFileNameNoExt(self, s): # args string, return string
         returns = ""
@@ -324,7 +322,7 @@ class Latk(object):
         stroke.color = color
         lastFrame.strokes.append(stroke)
     
-    def setPoints(self, coords, color=(1.0,1.0,1.0)):
+    def setCoords(self, coords, color=(1.0,1.0,1.0)):
         lastLayer = self.layers[len(self.layers)-1]
         lastFrame = lastLayer.frames[len(lastLayer.frames)-1]
         stroke = LatkStroke()
@@ -362,25 +360,17 @@ class Latk(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer(object):    
-    def __init__(self, name=None, frames=None): 
-        if not name:
-            name = "layer"   
-        if not frames:
-            self.frames = [] # LatkFrame
-        else:
-            self.frames = frames
+    def __init__(self, name="layer"): 
+        self.frames = [] # LatkFrame
         self.name = name
         self.parent = None
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkFrame(object):   
-    def __init__(self, strokes=None): 
-        if not strokes:   
-            self.strokes = [] # LatkStroke
-        else:
-            self.strokes = strokes
-        self.frame_number = 0
+    def __init__(self, frame_number=0): 
+        self.strokes = [] # LatkStroke
+        self.frame_number = frame_number
         self.parent_location = (0.0,0.0,0.0)
         
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
