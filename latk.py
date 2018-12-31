@@ -65,7 +65,7 @@ class Latk(object):
         returns = temp[len(temp)-1]
         return returns
 
-    def read(self, fileName, clearExisting=True): # args string, bool
+    def read(self, fileName, clearExisting=True, yUp=False, useScaleAndOffset=False, globalScale=(10.0, 10.0, 10.0), globalOffset=(0.0, 0.0, 0.0)): # defaults to Blender Z up
         data = None
 
         if (clearExisting == True):
@@ -89,9 +89,9 @@ class Latk(object):
                     for jsonStroke in jsonFrame["strokes"]:                       
                         color = (1,1,1)
                         try:
-                            r = float(jsonStroke["coloror"][0])
-                            g = float(jsonStroke["coloror"][1])
-                            b = float(jsonStroke["coloror"][2])
+                            r = jsonStroke["color"][0]
+                            g = jsonStroke["color"][1]
+                            b = jsonStroke["color"][2]
                             color = (r,g,b)
                         except:
                             pass
@@ -99,8 +99,20 @@ class Latk(object):
                         points = []
                         for jsonPoint in jsonStroke["points"]:
                             x = float(jsonPoint["co"][0])
-                            y = float(jsonPoint["co"][1])
-                            z = float(jsonPoint["co"][2])
+                            y = None
+                            z = None
+                            if (yUp == False):
+                                y = float(jsonPoint["co"][2])
+                                z = float(jsonPoint["co"][1])  
+                            else:
+                                y = float(jsonPoint["co"][1])
+                                z = float(jsonPoint["co"][2]) 
+                            #~
+                            if (useScaleAndOffset == True):
+                                x = (x * globalScale[0]) + globalOffset[0]
+                                y = (y * globalScale[1]) + globalOffset[1]
+                                z = (z * globalScale[2]) + globalOffset[2]
+                            #~                                                           
                             pressure = 1.0
                             strength = 1.0
                             try:
@@ -118,7 +130,7 @@ class Latk(object):
                     layer.frames.append(frame)
                 self.layers.append(layer)
 
-    def write(self, fileName): # args string
+    def write(self, fileName, yUp=True, useScaleAndOffset=False, globalScale=(0.1, 0.1, 0.1), globalOffset=(0.0, 0.0, 0.0)): # defaults to Unity, Maya Y up
         FINAL_LAYER_LIST = [] # string array
 
         for layer in self.layers:
@@ -137,16 +149,31 @@ class Latk(object):
                     sbb = [] # string array
                     sbb.append("\t\t\t\t\t\t\t\t{")
                     color = stroke.color
-                    sbb.append("\t\t\t\t\t\t\t\t\t\"coloror\": [" + str(color[0]) + ", " + str(color[1]) + ", " + str(color[2]) + "],")
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(color[0]) + ", " + str(color[1]) + ", " + str(color[2]) + "],")
 
                     if (len(stroke.points) > 0): 
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": [")
-                        for j, point in enumerate(stroke.points):                                     
+                        for j, point in enumerate(stroke.points):
+                            x = point.co[0]
+                            y = None
+                            z = None
+                            if (yUp == True):
+                                y = point.co[2]
+                                z = point.co[1]
+                            else:
+                                y = point.co[1]
+                                z = point.co[2]  
+                            #~
+                            if (useScaleAndOffset == True):
+                                x = (x * globalScale[0]) + globalOffset[0]
+                                y = (y * globalScale[1]) + globalOffset[1]
+                                z = (z * globalScale[2]) + globalOffset[2]
+                            #~                                           
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(x) + ", " + str(y) + ", " + str(z) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(point.co[0]) + ", " + str(point.co[1]) + ", " + str(point.co[2]) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(x) + ", " + str(y) + ", " + str(z) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": []")
                     
@@ -377,20 +404,18 @@ class LatkFrame(object):
 
 class LatkStroke(object):       
     def __init__(self, points=None, color=(1.0,1.0,1.0)): # args float tuple array, float tuple 
-        if not points:
-            self.points = []
-        else:
+        self.points = []
+        if (points != None):
             self.points = points
         self.color = color
         self.alpha = 1.0
         self.fill_color = color
         self.fill_alpha = 0.0
 
-    def setCoords(self, coords, color=(1.0, 1.0, 1.0)):
+    def setCoords(self, coords):
         self.points = []
         for coord in coords:
             self.points.append(LatkPoint(coord))
-        self.color = color
 
     def getCoords(self):
         returns = []
