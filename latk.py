@@ -391,6 +391,9 @@ class LatkLayer(object):
         self.frames = [] # LatkFrame
         self.name = name
         self.parent = None
+
+    def getInfo(self):
+        return self.name.split(".")[0]
     
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
