@@ -27,9 +27,9 @@ class Renderer(object):
 	    for layer in _latk.layers:
 	        for frame in layer.frames:
 	            for stroke in frame.strokes:
-	                r = int(stroke.col[0] * 255)
-	                g = int(stroke.col[1] * 255)
-	                b = int(stroke.col[2] * 255)
+	                r = int(stroke.color[0] * 255)
+	                g = int(stroke.color[1] * 255)
+	                b = int(stroke.color[2] * 255)
 	                col = (r,g,b)
 
 	                points = []
