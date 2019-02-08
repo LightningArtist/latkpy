@@ -27,16 +27,17 @@ import json
 import zipfile
 from io import BytesIO
 from math import sqrt
+from numpy import float32
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class Latk(object):     
-    def __init__(self, fileName=None, init=False, coords=None, color=None): # args string, Latk array, float tuple array, float tuple           
+    def __init__(self, filepath=None, init=False, coords=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
         self.frame_rate = 12
 
-        if (fileName != None):
-            self.read(fileName, True)
+        if (filepath != None):
+            self.read(filepath, True)
         elif (init == True):
             self.layers.append(LatkLayer())
             self.layers[0].frames.append(LatkFrame())
@@ -65,19 +66,19 @@ class Latk(object):
         returns = temp[len(temp)-1]
         return returns
 
-    def read(self, fileName, clearExisting=True, yUp=False, useScaleAndOffset=False, globalScale=(10.0, 10.0, 10.0), globalOffset=(0.0, 0.0, 0.0)): # defaults to Blender Z up
+    def read(self, filepath, clearExisting=True, yUp=False, useScaleAndOffset=False, globalScale=(1.0, 1.0, 1.0), globalOffset=(0.0, 0.0, 0.0)): # defaults to Blender Z up
         data = None
 
         if (clearExisting == True):
             self.layers = []
         
-        fileType = self.getExtFromFileName(fileName)
+        fileType = self.getExtFromFileName(filepath)
         if (fileType == "latk" or fileType == "zip"):
             imz = InMemoryZip()
-            imz.readFromDisk(fileName)
+            imz.readFromDisk(filepath)
             data = json.loads(imz.files[0].decode("utf-8"))        
         else:
-            with open(fileName) as data_file:    
+            with open(filepath) as data_file:    
                 data = json.load(data_file)
                             
         for jsonGp in data["grease_pencil"]:          
@@ -130,7 +131,7 @@ class Latk(object):
                     layer.frames.append(frame)
                 self.layers.append(layer)
 
-    def write(self, fileName, yUp=True, useScaleAndOffset=False, globalScale=(0.1, 0.1, 0.1), globalOffset=(0.0, 0.0, 0.0)): # defaults to Unity, Maya Y up
+    def write(self, filepath, yUp=True, useScaleAndOffset=False, zipped=True, globalScale=(1.0, 1.0, 1.0), globalOffset=(0.0, 0.0, 0.0)): # defaults to Unity, Maya Y up
         FINAL_LAYER_LIST = [] # string array
 
         for layer in self.layers:
@@ -149,7 +150,7 @@ class Latk(object):
                     sbb = [] # string array
                     sbb.append("\t\t\t\t\t\t\t\t{")
                     color = stroke.color
-                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(color[0]) + ", " + str(color[1]) + ", " + str(color[2]) + "],")
+                    sbb.append("\t\t\t\t\t\t\t\t\t\"color\": [" + str(float32(color[0])) + ", " + str(float32(color[1])) + ", " + str(float32(color[2])) + "],")
 
                     if (len(stroke.points) > 0): 
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": [")
@@ -170,10 +171,10 @@ class Latk(object):
                                 z = (z * globalScale[2]) + globalOffset[2]
                             #~                                           
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(x) + ", " + str(y) + ", " + str(z) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + "}")
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(x) + ", " + str(y) + ", " + str(z) + "], \"pressure\":" + str(point.pressure) + ", \"strength\":" + str(point.strength) + "},")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + "},")
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": []")
                     
@@ -221,14 +222,14 @@ class Latk(object):
         s.append("\t]")
         s.append("}")
         
-        fileType = self.getExtFromFileName(fileName)
-        if (fileType == "latk" or fileType == "zip"):
-            fileNameNoExt = self.getFileNameNoExt(fileName)
+        fileType = self.getExtFromFileName(filepath)
+        if (zipped == True or fileType == "latk" or fileType == "zip"):
+            filepathNoExt = self.getFileNameNoExt(filepath)
             imz = InMemoryZip()
-            imz.append(fileNameNoExt + ".json", "\n".join(s))
-            imz.writetofile(fileName)            
+            imz.append(filepathNoExt + ".json", "\n".join(s))
+            imz.writetofile(filepath)            
         else:
-            with open(fileName, "w") as f:
+            with open(filepath, "w") as f:
                 f.write("\n".join(s))
                 f.closed
                              
