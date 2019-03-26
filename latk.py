@@ -243,9 +243,17 @@ class Latk(object):
             for frame in layer.frames:
                 for stroke in frame.strokes:
                     coords = []
+                    pressures = []
+                    strengths = []
                     for point in stroke.points:
                         coords.append(point.co)
+                        pressures.append(point.pressure)
+                        strengths.append(point.strength)
                     stroke.setCoords(rdp(coords, epsilon=epsilon))
+                    for i in range(0, len(stroke.points)):
+                        index = remapInt(i, 0, len(stroke.points), 0, len(pressures))
+                        stroke.points[i].pressure = pressures[index]
+                        stroke.points[i].strength = strengths[index]
 
     def filter(self, cleanMinPoints = 2, cleanMinLength = 0.1):
         if (cleanMinPoints < 2):
@@ -383,6 +391,15 @@ class Latk(object):
     def roundValInt(self, a):
         formatter = "{0:." + str(0) + "f}"
         return int(formatter.format(a))
+
+    def remap(self, value, min1, max1, min2, max2):
+        range1 = max1 - min1
+        range2 = max2 - min2
+        valueScaled = float(value - min1) / float(range1)
+        return min2 + (valueScaled * range2)
+
+    def remapInt(self, value, min1, max1, min2, max2):
+        return int(self.remap(value, min1, max1, min2, max2))
 
     def writeTextFile(self, name="test.txt", lines=None):
         file = open(name,"w") 
