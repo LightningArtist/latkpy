@@ -1,6 +1,6 @@
 @echo off
 
-cd %~dp0
+cd /D %~dp0
 
 set INPUT=%1
 set OUTPUT=test.latk
