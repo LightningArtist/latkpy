@@ -27,9 +27,9 @@ import json
 import zipfile
 from io import BytesIO
 from math import sqrt
+from math import tan
 from numpy import float32
 from numpy import isnan
-import math
 
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
@@ -537,8 +537,8 @@ class KinectConverter(object):
         self.init()
 
     def init(self):
-        self.xzFactor = math.tan(self.horizontalFov / 2) * 2
-        self.yzFactor = math.tan(self.verticalFov / 2) * 2
+        self.xzFactor = tan(self.horizontalFov / 2) * 2
+        self.yzFactor = tan(self.verticalFov / 2) * 2
         self.halfResX = self.resolutionX / 2
         self.halfResY = self.resolutionY / 2
         self.coeffX = float(self.resolutionX) / self.xzFactor
@@ -549,7 +549,7 @@ class KinectConverter(object):
         normalizedX = depthX / self.resolutionX - 0.5
         normalizedY = 0.5 - depthY / self.resolutionY
      
-        pWorldX = normalizedX * depthZ * self.yzFactor * -(float(self.resolutionX)/float(self.resolutionY))
+        pWorldX = normalizedX * depthZ * self.xzFactor #* -(float(self.resolutionX)/float(self.resolutionY))
         pWorldY = normalizedY * depthZ * self.yzFactor
         pWorldZ = (depthZ / 255) * self.maxDepthVals
         
