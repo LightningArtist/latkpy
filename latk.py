@@ -303,7 +303,7 @@ class Latk(object):
                                 y = (y * globalScale[1]) + globalOffset[1]
                                 z = (z * globalScale[2]) + globalOffset[2]
                             #~ 
-                            pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\": [" + str(float32(r)) + ", " + str(float32(g)) + ", " + str(float32(b)) + "]}"
+                            pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\": " + str(float32(point.pressure)) + ", \"strength\": " + str(float32(point.strength)) + ", \"vertex_color\": [" + str(float32(r)) + ", " + str(float32(g)) + ", " + str(float32(b)) + "]}"
                                           
                             if (j == len(stroke.points) - 1):
                                 sbb.append(pointStr)
