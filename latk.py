@@ -288,6 +288,9 @@ class Latk(object):
                             x = point.co[0]
                             y = None
                             z = None
+                            r = point.vertex_color[0]
+                            g = point.vertex_color[1]
+                            b = point.vertex_color[2]
                             if (yUp == True):
                                 y = point.co[2]
                                 z = point.co[1]
@@ -299,12 +302,15 @@ class Latk(object):
                                 x = (x * globalScale[0]) + globalOffset[0]
                                 y = (y * globalScale[1]) + globalOffset[1]
                                 z = (z * globalScale[2]) + globalOffset[2]
-                            #~                                           
+                            #~ 
+                            pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\": [" + str(float32(r)) + ", " + str(float32(g)) + ", " + str(float32(b)) + "]}"
+                                          
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\":" + str(float32(point.vertex_color)) + "}")
+                                sbb.append(pointStr)
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\":" + str(float32(point.vertex_color)) + "},")
+                                pointStr += ","
+                                sbb.append(pointStr)
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": []")
                     
