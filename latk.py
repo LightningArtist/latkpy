@@ -189,7 +189,7 @@ class Latk(object):
                                     try:
                                         strength = jsonPoint["strength"]
                                         if (isnan(strength) == True):
-                                            strenght = 1.0
+                                            strength = 1.0
                                     except:
                                         pass
                                     points.append(LatkPoint((x,y,z), pressure, strength))
@@ -235,6 +235,7 @@ class Latk(object):
                                     #~                                                           
                                     pressure = 1.0
                                     strength = 1.0
+                                    vertex_color = (0.0,0.0,0.0,1.0)
                                     try:
                                         pressure = jsonPoint["pressure"]
                                         if (isnan(pressure) == True):
@@ -244,10 +245,16 @@ class Latk(object):
                                     try:
                                         strength = jsonPoint["strength"]
                                         if (isnan(strength) == True):
-                                            strenght = 1.0
+                                            strength = 1.0
                                     except:
                                         pass
-                                    points.append(LatkPoint((x,y,z), pressure, strength))
+                                    try:
+                                        vertex_color = jsonPoint["vertex_color"]
+                                        if (isnan(vertex_color) == True):
+                                            vertex_color = (0.0,0.0,0.0,1.0)
+                                    except:
+                                        pass     
+                                    points.append(LatkPoint((x,y,z), pressure, strength, vertex_color))
                                                         
                                 stroke = LatkStroke(points, color)
                                 frame.strokes.append(stroke)
@@ -294,10 +301,10 @@ class Latk(object):
                                 z = (z * globalScale[2]) + globalOffset[2]
                             #~                                           
                             if (j == len(stroke.points) - 1):
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + "}")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\":" + str(float32(point.vertex_color)) + "}")
                                 sbb.append("\t\t\t\t\t\t\t\t\t]")
                             else:
-                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + "},")
+                                sbb.append("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\":" + str(float32(point.pressure)) + ", \"strength\":" + str(float32(point.strength)) + ", \"vertex_color\":" + str(float32(point.vertex_color)) + "},")
                     else:
                         sbb.append("\t\t\t\t\t\t\t\t\t\"points\": []")
                     
@@ -322,6 +329,7 @@ class Latk(object):
         s = [] # string
         s.append("{")
         s.append("\t\"creator\": \"latk.py\",")
+        s.append("\t\"version\": 2.8,")
         s.append("\t\"grease_pencil\": [")
         s.append("\t\t{")
         s.append("\t\t\t\"layers\": [")
@@ -631,10 +639,11 @@ class LatkStroke(object):
 # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkPoint(object):
-    def __init__(self, co, pressure=1.0, strength=1.0): # args float tuple, float, float
+    def __init__(self, co, pressure=1.0, strength=1.0, vertex_color=(0.0, 0.0, 0.0, 1.0)): # args float tuple, float, float
         self.co = co
         self.pressure = pressure
         self.strength = strength
+        self.vertex_color = vertex_color
     
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
