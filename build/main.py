@@ -5,7 +5,7 @@ The Lightning Artist Toolkit was developed with support from:
    Ontario Arts Council
    Toronto Arts Council
    
-Copyright (c) 2019 Nick Fox-Gieg
+Copyright (c) 2020 Nick Fox-Gieg
 http://fox-gieg.com
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -625,7 +625,147 @@ class Latk(object):
         file = open(name, "r") 
         return file.read() 
 
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+    def readTiltBrush(self, filepath=None, vertSkip=1):
+        globalScale = (1, 1, 1)
+        globalOffset = (0, 0, 0)
+        useScaleAndOffset = True
+
+        filetype = self.getExtFromFileName(filepath)
+
+        if (filetype == "tilt" or filetype == "zip"): # Tilt Brush binary file with original stroke data
+            t = Tilt(filepath)
+            #~
+            layer = LatkLayer("TiltBrush")
+            frame = LatkFrame()
+            #~
+            for tstroke in t.sketch.strokes:
+                strokeColor = (0,0,0)
+                pointGroup = []
+                try:
+                    strokeColor = (tstroke.brush_color[0], tstroke.brush_color[1], tstroke.brush_color[2])
+                except:
+                    pass
+                for i in range(0, len(tstroke.controlpoints), vertSkip):
+                    controlpoint = tstroke.controlpoints[i]
+                    last_controlpoint = tstroke.controlpoints[i-1]
+                    x = 0.0
+                    y = 0.0
+                    z = 0.0
+                    #~
+                    point = controlpoint.position
+                    last_point = last_controlpoint.position
+                    if (i==0 or point != last_point): # try to prevent duplicate points
+                        pressure = 1.0
+                        strength = 1.0
+                        try:
+                            pressure = controlpoint.extension[0]
+                            # TODO strength?
+                        except:
+                            pass
+                        #~
+                        x = point[0]
+                        y = point[2]
+                        z = point[1]
+                        if useScaleAndOffset == True:
+                            x = (x * globalScale[0]) + globalOffset[0]
+                            y = (y * globalScale[1]) + globalOffset[1]
+                            z = (z * globalScale[2]) + globalOffset[2]
+                        pointGroup.append((x, y, z, pressure, strength))
+                        #~
+                stroke = LatkStroke(color=strokeColor)
+                for l, point in enumerate(pointGroup):
+                    point = LatkPoint(co=(point[0], point[1], point[2]), pressure=point[3], strength=point[4])
+                    stroke.points.append(point)
+                
+                frame.strokes.append(stroke)
+            
+            layer.frames.append(frame)
+            self.layers.append(layer)
+            # ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+            """Prints out some rough information about the strokes.
+            Pass a tiltbrush.tilt.Sketch instance."""
+            '''
+            cooky, version, unused = sketch.header[0:3]
+            '''
+            #output += 'Cooky:0x%08x    Version:%s    Unused:%s    Extra:(%d bytes)' % (
+                #cooky, version, unused, len(sketch.additional_header))
+            '''
+            if len(sketch.strokes):
+                stroke = sketch.strokes[0]    # choose one representative one
+                def extension_names(lookup):
+                    # lookup is a dict mapping name -> idx
+                    extensions = sorted(lookup.items(), key=lambda (n,i): i)
+                    return ', '.join(name for (name, idx) in extensions)
+                #output += "Stroke Ext: %s" % extension_names(stroke.stroke_ext_lookup)
+                #if len(stroke.controlpoints):
+                    #output += "CPoint Ext: %s" % extension_names(stroke.cp_ext_lookup)
+            '''
+            '''
+            for (i, stroke) in enumerate(sketch.strokes):
+                #output += "%3d: " % i,
+                output += dump_stroke(stroke)
+            '''
+        else: # Tilt Brush JSON export file, not original stroke data
+            pressure = 1.0
+            strength = 1.0
+            #~
+            with open(filepath) as data_file: 
+                data = json.load(data_file)
+            #~
+            layer = LatkLayer("TiltBrush")
+            frame = LatkFrame()
+            #~
+            for strokeJson in data["strokes"]:
+                strokeColor = (0,0,0)
+                try:
+                    colorGroup = tiltBrushJson_DecodeData(strokeJson["c"], "c")
+                    strokeColor = (colorGroup[0][0], colorGroup[0][1], colorGroup[0][2])
+                except:
+                    pass
+                #~
+                vertsFailed = False
+                vertGroup = []
+                pointGroup = []
+                try:
+                    vertGroup = tiltBrushJson_DecodeData(strokeJson["v"], "v")
+                except:
+                    vertsFailed = True
+
+                if (vertsFailed==False and len(vertGroup) > 0):
+                    for j in range(0, len(vertGroup), vertSkip):
+                        if (j==0 or vertGroup[j] != vertGroup[j-1]): # try to prevent duplicate points
+                            vert = vertGroup[j]
+                            if (vert[0] == 0 and vert[1] == 0 and vert[2] == 0):
+                                pass
+                            else:
+                                try:
+                                    x = -vert[0]
+                                    y = vert[2]
+                                    z = vert[1]
+                                    if (useScaleAndOffset == True):
+                                        x = (x * globalScale[0]) + globalOffset[0]
+                                        y = (y * globalScale[1]) + globalOffset[1]
+                                        z = (z * globalScale[2]) + globalOffset[2]
+                                    pointGroup.append((x, y, z, pressure, strength))
+                                except:
+                                    pass
+
+                if (vertsFailed==False):
+                    stroke = LatkStroke(color=strokeColor)
+                    for l, point in enumerate(pointGroup):
+                        point = LatkPoint(co=(point[0], point[1], point[2]), pressure=point[3], strength=point[4])
+                        stroke.points.append(point)
+                
+                frame.strokes.append(stroke)
+            
+            layer.frames.append(frame)
+            self.layers.append(layer)
+
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer(object):    
     def __init__(self, name="layer"): 
