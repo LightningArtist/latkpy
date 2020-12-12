@@ -13,4 +13,4 @@ cd $DIR
 INPUT=latk_logo.latk
 OUTPUT=test.latk
 
-python latk_viz.py -- $DIR/$INPUT $DIR/$OUTPUT
+python latk_clean.py -- $DIR/$INPUT $DIR/$OUTPUT

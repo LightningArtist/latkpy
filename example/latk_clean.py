@@ -1,4 +1,7 @@
 import sys
+
+sys.path.insert(1, "../")
+
 from latk import *
   
 argv = sys.argv

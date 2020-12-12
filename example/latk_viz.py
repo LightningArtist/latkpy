@@ -2,6 +2,8 @@ import sys
 import PIL.ImageDraw as ImageDraw
 import PIL.Image as Image
 
+sys.path.insert(1, "../")
+
 from latk import *
   
 argv = sys.argv
