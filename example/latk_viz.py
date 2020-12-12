@@ -36,11 +36,11 @@ class Renderer(object):
 
 	                points = []
 	                for point in stroke.points:
-	                    x = int(self.width/2) + int(point.co[2] * self.width/2)
-	                    y = int(self.height/2) - int(point.co[1] * self.height/2)
+	                    x = int(self.width/2.65) + int(point.co[1] * self.width/2)
+	                    y = int(self.height/2) - int(point.co[2] * self.height/2)
 	                    points.append((x,y))
 	                if (len(points) > 1):
-	                    self.draw.polygon(points, outline=col)
+	                    self.draw.line(points, col)
 	    self.image.show()
 
 def main():
