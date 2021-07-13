@@ -5,7 +5,7 @@ cd /D %~dp0
 
 del %BUILD_TARGET%
 
-copy /b main.py+zip.py+rdp.py+tilt.py %BUILD_TARGET%
+copy /b main.py+zip.py+rdp.py+kmeans.py+tilt.py %BUILD_TARGET%
 
 rem copy %BUILD_TARGET% "%homepath%\AppData\Roaming\Blender Foundation\Blender\2.77\scripts\addons"
 
