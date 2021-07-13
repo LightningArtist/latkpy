@@ -1,6 +1,6 @@
 # based on https:#openprocessing.org/sketch/51404/
 
-from random import uniform as random
+from random import uniform
 
 def kdist(p1, p2):
     [x1,y1,z1] = p1
@@ -48,7 +48,7 @@ class Kmeans(object):
         self.clusters.clear()
     
         for i in range(0, self.numberOfCentroids):
-            c = KCentroid(i, 127+random(0,127), 127+random(0,127), 127+random(0,127), self.minX, self.maxX, self.minY, self.maxY, self.minZ, self.maxZ)
+            c = KCentroid(i, 127+uniform(0,127), 127+uniform(0,127), 127+uniform(0,127), self.minX, self.maxX, self.minY, self.maxY, self.minZ, self.maxZ)
             self.centroids.append(c)
         
     def update(self):
@@ -94,7 +94,7 @@ class Kmeans(object):
 
 class KCentroid(object):
     def __init__(self, _internalIndex, _r, _g, _b, _minX, _maxX, _minY, _maxY, _minZ, _maxZ): # int, float, float, float, float, float, float, float, float, float
-        self.position = (random(_minX, _maxX), random(_minY, _maxY), random(_minZ, _maxZ))
+        self.position = (uniform(_minX, _maxX), uniform(_minY, _maxY), uniform(_minZ, _maxZ))
         self.colorR = _r
         self.colorG = _g
         self.colorB = _b
