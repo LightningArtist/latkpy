@@ -1,60 +1,35 @@
-'''
-The Lightning Artist Toolkit was developed with support from:
-   Canada Council on the Arts
-   Eyebeam Art + Technology Center
-   Ontario Arts Council
-   Toronto Arts Council
-   
-Copyright (c) 2020 Nick Fox-Gieg
-http://fox-gieg.com
+from latkpy.latk import Latk
+from latkpy.latk import LatkLayer
+from latkpy.latk import LatkFrame
+from latkpy.latk import LatkStroke
+from latkpy.latk import LatkPoint
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+from latkpy.latk import memoized_property
+from latkpy.latk import binfile
+from latkpy.latk import BadTilt
+from latkpy.latk import BadMetadata
+from latkpy.latk import MissingKey
+from latkpy.latk import validate_metadata
+from latkpy.latk import Tilt
+from latkpy.latk import _make_ext_reader
+from latkpy.latk import _make_stroke_ext_reader
+from latkpy.latk import _make_cp_ext_reader
+from latkpy.latk import Sketch
+from latkpy.latk import Stroke
+from latkpy.latk import ControlPoint
+from latkpy.latk import tiltBrushJson_Grouper
+from latkpy.latk import tiltBrushJson_DecodeData
 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-'''
+from latkpy.latk import kdist
+from latkpy.latk import KMeans
+from latkpy.latk import KCentroid
+from latkpy.latk import KParticle
+from latkpy.latk import KCluster
 
-from latkpy.main import Latk
-from latkpy.main import LatkLayer
-from latkpy.main import LatkFrame
-from latkpy.main import LatkStroke
-from latkpy.main import LatkPoint
+from latkpy.latk import pldist
+from latkpy.latk import rdp_rec
+from latkpy.latk import _rdp_iter
+from latkpy.latk import rdp_iter
+from latkpy.latk import rdp
 
-from latkpy.tilt import memoized_property
-from latkpy.tilt import binfile
-from latkpy.tilt import BadTilt
-from latkpy.tilt import BadMetadata
-from latkpy.tilt import MissingKey
-from latkpy.tilt import validate_metadata
-from latkpy.tilt import Tilt
-from latkpy.tilt import _make_ext_reader
-from latkpy.tilt import _make_stroke_ext_reader
-from latkpy.tilt import _make_cp_ext_reader
-from latkpy.tilt import Sketch
-from latkpy.tilt import Stroke
-from latkpy.tilt import ControlPoint
-from latkpy.tilt import tiltBrushJson_Grouper
-from latkpy.tilt import tiltBrushJson_DecodeData
-
-from latkpy.kmeans import kdist
-from latkpy.kmeans import KMeans
-from latkpy.kmeans import KCentroid
-from latkpy.kmeans import KParticle
-from latkpy.kmeans import KCluster
-
-from latkpy.rdp import pldist
-from latkpy.rdp import rdp_rec
-from latkpy.rdp import _rdp_iter
-from latkpy.rdp import rdp_iter
-from latkpy.rdp import rdp
-
-from latkpy.zip import InMemoryZip
+from latkpy.latk import InMemoryZip

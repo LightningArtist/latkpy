@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_TARGET="../latk.py"
+BUILD_TARGET="../latkpy/latk.py"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -15,4 +15,4 @@ cd $DIR
 rm $BUILD_TARGET
 touch $BUILD_TARGET
 
-cat "__init__.py" "main.py" "zip.py" "rdp.py" "kmeans.py" "tilt.py" > $BUILD_TARGET
+cat "main.py" "zip.py" "rdp.py" "kmeans.py" "tilt.py" > $BUILD_TARGET
