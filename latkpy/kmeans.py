@@ -1,5 +1,7 @@
 # based on https:#openprocessing.org/sketch/51404/
 
+from random import uniform
+
 def kdist(p1, p2):
     [x1,y1,z1] = p1
     [x2,y2,z2] = p2    

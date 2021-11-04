@@ -145,6 +145,14 @@ def validate_metadata(dct):
 # External
 #
 
+import os
+import math
+import json
+import uuid
+import struct
+import contextlib
+from collections import defaultdict
+import io
 
 class Tilt(object):
     """Class representing a .tilt file. Attributes:

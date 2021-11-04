@@ -23,34 +23,12 @@ http://fox-gieg.com
 # limitations under the License.
 '''
 
-import json
-import math
-from math import sqrt
-import numpy as np
-from numpy import float32
-from numpy import isnan
-import zipfile
-import io
-from io import BytesIO
-import os
-import json
-import uuid
-import struct
-import contextlib
-from collections import defaultdict
-from random import uniform
-from functools import partial
-import sys
-
 from latkpy.main import Latk
 from latkpy.main import LatkLayer
 from latkpy.main import LatkFrame
 from latkpy.main import LatkStroke
 from latkpy.main import LatkPoint
 
-from latkpy.tilt import STROKE_EXTENSION_BITS
-from latkpy.tilt import STROKE_EXTENSION_BY_NAME
-from latkpy.tilt import CONTROLPOINT_EXTENSION_BITS
 from latkpy.tilt import memoized_property
 from latkpy.tilt import binfile
 from latkpy.tilt import BadTilt

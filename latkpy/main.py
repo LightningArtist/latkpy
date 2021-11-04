@@ -1,3 +1,8 @@
+import json
+from math import sqrt
+from numpy import float32
+from numpy import isnan
+
 class Latk(object):     
     def __init__(self, filepath=None, init=False, coords=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer

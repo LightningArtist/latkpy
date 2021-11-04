@@ -30,6 +30,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
 
+from math import sqrt
+from functools import partial
+import numpy as np
+import sys
+
 def pldist(point, start, end):
     """
     Calculates the distance from ``point`` to the line given
