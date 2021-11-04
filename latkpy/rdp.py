@@ -29,14 +29,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
-from math import sqrt
-from functools import partial
-import numpy as np
-import sys
-
-if sys.version_info[0] >= 3:
-    xrange = range
-
 
 def pldist(point, start, end):
     """
@@ -74,7 +66,7 @@ def rdp_rec(M, epsilon, dist=pldist):
     dmax = 0.0
     index = -1
 
-    for i in xrange(1, M.shape[0]):
+    for i in range(1, M.shape[0]):
         d = dist(M[i], M[0], M[-1])
 
         if d > dmax:
@@ -102,7 +94,7 @@ def _rdp_iter(M, start_index, last_index, epsilon, dist=pldist):
         dmax = 0.0
         index = start_index
 
-        for i in xrange(index + 1, last_index):
+        for i in range(index + 1, last_index):
             if indices[i - global_start_index]:
                 d = dist(M[i], M[start_index], M[last_index])
                 if d > dmax:
@@ -113,7 +105,7 @@ def _rdp_iter(M, start_index, last_index, epsilon, dist=pldist):
             stk.append([start_index, index])
             stk.append([index, last_index])
         else:
-            for i in xrange(start_index + 1, last_index):
+            for i in range(start_index + 1, last_index):
                 indices[i - global_start_index] = False
 
     return indices

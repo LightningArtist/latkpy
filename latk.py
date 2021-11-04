@@ -24,13 +24,62 @@ http://fox-gieg.com
 '''
 
 import json
+import math
 from math import sqrt
+import numpy as np
 from numpy import float32
 from numpy import isnan
+import zipfile
+import io
+from io import BytesIO
+import os
+import json
+import uuid
+import struct
+import contextlib
+from collections import defaultdict
+from random import uniform
+from functools import partial
+import sys
 
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
+from latkpy.main import Latk
+from latkpy.main import LatkLayer
+from latkpy.main import LatkFrame
+from latkpy.main import LatkStroke
+from latkpy.main import LatkPoint
 
-class Latk(object):     
+from latkpy.tilt import STROKE_EXTENSION_BITS
+from latkpy.tilt import STROKE_EXTENSION_BY_NAME
+from latkpy.tilt import CONTROLPOINT_EXTENSION_BITS
+from latkpy.tilt import memoized_property
+from latkpy.tilt import binfile
+from latkpy.tilt import BadTilt
+from latkpy.tilt import BadMetadata
+from latkpy.tilt import MissingKey
+from latkpy.tilt import validate_metadata
+from latkpy.tilt import Tilt
+from latkpy.tilt import _make_ext_reader
+from latkpy.tilt import _make_stroke_ext_reader
+from latkpy.tilt import _make_cp_ext_reader
+from latkpy.tilt import Sketch
+from latkpy.tilt import Stroke
+from latkpy.tilt import ControlPoint
+from latkpy.tilt import tiltBrushJson_Grouper
+from latkpy.tilt import tiltBrushJson_DecodeData
+
+from latkpy.kmeans import kdist
+from latkpy.kmeans import KMeans
+from latkpy.kmeans import KCentroid
+from latkpy.kmeans import KParticle
+from latkpy.kmeans import KCluster
+
+from latkpy.rdp import pldist
+from latkpy.rdp import rdp_rec
+from latkpy.rdp import _rdp_iter
+from latkpy.rdp import rdp_iter
+from latkpy.rdp import rdp
+
+from latkpy.zip import InMemoryZipclass Latk(object):     
     def __init__(self, filepath=None, init=False, coords=None, color=None): # args string, Latk array, float tuple array, float tuple           
         self.layers = [] # LatkLayer
         self.frame_rate = 12
@@ -939,9 +988,6 @@ class LatkPoint(object):
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 # * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-import zipfile
-from io import BytesIO
-
 class InMemoryZip(object):
 
     def __init__(self):
@@ -1015,14 +1061,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
-from math import sqrt
-from functools import partial
-import numpy as np
-import sys
-
-if sys.version_info[0] >= 3:
-    xrange = range
-
 
 def pldist(point, start, end):
     """
@@ -1060,7 +1098,7 @@ def rdp_rec(M, epsilon, dist=pldist):
     dmax = 0.0
     index = -1
 
-    for i in xrange(1, M.shape[0]):
+    for i in range(1, M.shape[0]):
         d = dist(M[i], M[0], M[-1])
 
         if d > dmax:
@@ -1088,7 +1126,7 @@ def _rdp_iter(M, start_index, last_index, epsilon, dist=pldist):
         dmax = 0.0
         index = start_index
 
-        for i in xrange(index + 1, last_index):
+        for i in range(index + 1, last_index):
             if indices[i - global_start_index]:
                 d = dist(M[i], M[start_index], M[last_index])
                 if d > dmax:
@@ -1099,7 +1137,7 @@ def _rdp_iter(M, start_index, last_index, epsilon, dist=pldist):
             stk.append([start_index, index])
             stk.append([index, last_index])
         else:
-            for i in xrange(start_index + 1, last_index):
+            for i in range(start_index + 1, last_index):
                 indices[i - global_start_index] = False
 
     return indices
@@ -1192,14 +1230,12 @@ def rdp(M, epsilon=0, dist=pldist, algo="iter", return_mask=False):
 
 # based on https:#openprocessing.org/sketch/51404/
 
-from random import uniform
-
 def kdist(p1, p2):
     [x1,y1,z1] = p1
     [x2,y2,z2] = p2    
     return (((x2-x1)**2)+((y2-y1)**2)+((z2-z1)**2))**(1/2)     
 
-class Kmeans(object):
+class KMeans(object):
     def __init__(self, _points, _numCentroids): # ArrayList<PVector>, int
         self.particles = [] # ArrayList<KParticle>
         self.centroids = [] # ArrayList<KCentroid>
@@ -1395,15 +1431,6 @@ class KCluster(object):
 # limitations under the License.
 
 """Reads and writes .tilt files. The main export is 'class Tilt'."""
-
-import os
-import math
-import json
-import uuid
-import struct
-import contextlib
-from collections import defaultdict
-import io
 
 #__all__ = ('Tilt', 'Sketch', 'Stroke', 'ControlPoint', 'BadTilt', 'BadMetadata', 'MissingKey')
 
@@ -1667,7 +1694,7 @@ def _make_ext_reader(ext_bits, ext_mask):
     names = [info[0] for info in infos]
     if '@' in fmt:
         # struct.unpack isn't general enough to do the job
-        print(fmt, names, infos)
+        #print(fmt, names, infos)
         fmts = ['<'+info[1] for info in infos]
         def reader(f, fmts=fmts):
             values = [None] * len(fmts)

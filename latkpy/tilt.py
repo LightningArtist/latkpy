@@ -16,15 +16,6 @@
 
 """Reads and writes .tilt files. The main export is 'class Tilt'."""
 
-import os
-import math
-import json
-import uuid
-import struct
-import contextlib
-from collections import defaultdict
-import io
-
 #__all__ = ('Tilt', 'Sketch', 'Stroke', 'ControlPoint', 'BadTilt', 'BadMetadata', 'MissingKey')
 
 # Format characters are as for struct.pack/unpack, with the addition of
@@ -287,7 +278,7 @@ def _make_ext_reader(ext_bits, ext_mask):
     names = [info[0] for info in infos]
     if '@' in fmt:
         # struct.unpack isn't general enough to do the job
-        print(fmt, names, infos)
+        #print(fmt, names, infos)
         fmts = ['<'+info[1] for info in infos]
         def reader(f, fmts=fmts):
             values = [None] * len(fmts)

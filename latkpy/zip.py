@@ -1,6 +1,3 @@
-import zipfile
-from io import BytesIO
-
 class InMemoryZip(object):
 
     def __init__(self):
