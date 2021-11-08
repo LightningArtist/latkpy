@@ -1,6 +1,6 @@
 @echo off
 
-set BUILD_TARGET=..\latkpy\latk.py
+set BUILD_TARGET=..\latk\latk.py
 cd /D %~dp0
 
 del %BUILD_TARGET%

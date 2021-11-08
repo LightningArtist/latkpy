@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_TARGET="../latkpy/latk.py"
+BUILD_TARGET="../latk/latk.py"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
