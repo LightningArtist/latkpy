@@ -3,3 +3,4 @@
 *.latk
 *.json
 *.zip
+dist/*
