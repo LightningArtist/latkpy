@@ -611,7 +611,3 @@ def tiltBrushJson_DecodeData(obj, dataType="v"):
 
         return(data_grouped)
 
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-

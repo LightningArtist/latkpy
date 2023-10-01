@@ -4,3 +4,5 @@
 *.json
 *.zip
 dist/*
+.DS_Store
+

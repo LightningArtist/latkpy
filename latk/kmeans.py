@@ -1,5 +1,3 @@
-# based on https:#openprocessing.org/sketch/51404/
-
 from random import uniform
 
 def kdist(p1, p2):
@@ -7,14 +5,15 @@ def kdist(p1, p2):
     [x2,y2,z2] = p2    
     return (((x2-x1)**2)+((y2-y1)**2)+((z2-z1)**2))**(1/2)     
 
+
 class KMeans(object):
-    def __init__(self, _points, _numCentroids): # ArrayList<PVector>, int
-        self.particles = [] # ArrayList<KParticle>
-        self.centroids = [] # ArrayList<KCentroid>
-        self.centroidFinalPositions = [] # ArrayList<PVector>
-        self.clusters = [] # ArrayList<KCluster>
+    def __init__(self, _points, _numCentroids):
+        self.particles = []
+        self.centroids = []
+        self.centroidFinalPositions = []
+        self.clusters = []
         
-        self.numberOfCentroids = _numCentroids # int
+        self.numberOfCentroids = _numCentroids
         self.minX = 0.0
         self.maxX = 0.0
         self.minY = 0.0
@@ -53,7 +52,7 @@ class KMeans(object):
         
     def update(self):
         for particle in self.particles: 
-            particle.FindClosestCentroid(self.centroids)
+            particle.findClosestCentroid(self.centroids)
         
         self.totalStability = 0
         
@@ -73,27 +72,13 @@ class KMeans(object):
             
             self.ready = True
         
-        #println(totalStability + " " + ready)
-    
-    '''
-    def draw(self):
-        if (self.ready == False):
-            for particle in self.particles:
-                particle.draw()
-        
-            for centroid in self.centroids:
-                centroid.draw()
-    '''
-
     def run(self):
         if (self.ready == False):
             self.update()
-        #self.draw()
  
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class KCentroid(object):
-    def __init__(self, _internalIndex, _r, _g, _b, _minX, _maxX, _minY, _maxY, _minZ, _maxZ): # int, float, float, float, float, float, float, float, float, float
+    def __init__(self, _internalIndex, _r, _g, _b, _minX, _maxX, _minY, _maxY, _minZ, _maxZ):
         self.position = (uniform(_minX, _maxX), uniform(_minY, _maxY), uniform(_minZ, _maxZ))
         self.colorR = _r
         self.colorG = _g
@@ -101,11 +86,8 @@ class KCentroid(object):
         self.internalIndex = _internalIndex
         self.stability = -1.0
 
-    def update(self, _particles): # ArrayList<KParticle>
-        #println("-----------------------")
-        #println("K-Means KCentroid Tick")
-        # move the centroid to its position
-
+    def update(self, _particles):
+        # Move the centroid to its position.
         newPosition = (0.0, 0.0, 0.0)
 
         numberOfAssociatedParticles = 0
@@ -125,17 +107,6 @@ class KCentroid(object):
         self.stability = kdist(self.position, newPosition)
         self.position = newPosition
 
-    '''
-    def draw(self):
-        pushMatrix()
-        translate(position.x, position.y, position.z)
-        strokeWeight(10)
-        stroke(colorR, colorG, colorB)
-        point(0,0)
-        popMatrix()
-    '''
-
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class KParticle(object):
     def __init__(self, _position): # PVector
@@ -147,42 +118,31 @@ class KParticle(object):
         self.colorB = 0.0
         self.brightness = 0.8
     
-    def FindClosestCentroid(self, _centroids): # ArrayList<KCentroid> 
-        closestCentroidIndex = 0 # int
+    def findClosestCentroid(self, _centroids):
+        closestCentroidIndex = 0
         closestDistance = 100000.0
 
-        # find which centroid is the closest
+        # Find which centroid is the closest.
         for i in range(0, len(_centroids)):             
-            curCentroid = _centroids[i] # KCentroid
+            curCentroid = _centroids[i]
 
-            distanceCheck = kdist(self.position, curCentroid.position) # float
+            distanceCheck = kdist(self.position, curCentroid.position)
 
             if (distanceCheck < closestDistance):
                 closestCentroidIndex = i
                 closestDistance = distanceCheck
 
-        # now that we have the closest centroid chosen, assign the index,
+        # Now that we have the closest centroid chosen, assign the index...
         self.centroidIndex = closestCentroidIndex
 
-        # and grab the color for the visualization        
-        curCentroid = _centroids[self.centroidIndex] # KCentroid 
+        # ...and get the color for visualization.        
+        curCentroid = _centroids[self.centroidIndex]
         self.colorR = curCentroid.colorR * self.brightness
         self.colorG = curCentroid.colorG * self.brightness
         self.colorB = curCentroid.colorB * self.brightness
     
-    '''
-    def draw(self):
-        pushMatrix()
-        translate(position.x, position.y, position.z)
-        strokeWeight(2)
-        stroke(colorR, colorG, colorB)
-        point(0, 0)
-        popMatrix()
-    '''
-
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class KCluster(object):
-    def __init__(self, _centroid): # PVector    
+    def __init__(self, _centroid): 
         self.centroid = _centroid
         self.points = []

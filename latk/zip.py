@@ -40,6 +40,3 @@ class InMemoryZip(object):
         f.write(self.readFromMemory())
         f.close()
 
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-

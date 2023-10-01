@@ -199,5 +199,3 @@ def rdp(M, epsilon=0, dist=pldist, algo="iter", return_mask=False):
 
     return algo(np.array(M), epsilon, dist).tolist()
 
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-

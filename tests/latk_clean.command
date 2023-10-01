@@ -1,7 +1,5 @@
 #!/bin/bash
 
-BUILD_TARGET="../latk/latk.py"
-
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -12,7 +10,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 cd $DIR
 
-rm $BUILD_TARGET
-touch $BUILD_TARGET
+INPUT=../example/latk_logo.latk
+OUTPUT=test.latk
 
-cat "main.py" "zip.py" "rdp.py" "kmeans.py" "tilt.py" > $BUILD_TARGET
+python latk_clean.py -- $DIR/$INPUT $DIR/$OUTPUT

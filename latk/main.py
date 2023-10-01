@@ -5,8 +5,8 @@ The Lightning Artist Toolkit was developed with support from:
    Ontario Arts Council
    Toronto Arts Council
    
-Copyright (c) 2020 Nick Fox-Gieg
-http://fox-gieg.com
+Copyright (c) 2023 Nick Fox-Gieg
+https://fox-gieg.com
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -27,6 +27,10 @@ import json
 from math import sqrt
 from numpy import float32
 from numpy import isnan
+from . zip import *
+from . tilt import *
+from . rdp import *
+from . kmeans import *
 
 class Latk(object):     
     def __init__(self, filepath=None, layers=None, init=False, coords=None, color=None, frame_rate=12): # args string, Latk array, float tuple array, float tuple           
@@ -99,12 +103,12 @@ class Latk(object):
                             else:
                                 y = float(jsonPoint["y"])
                                 z = float(jsonPoint["z"]) 
-                            #~
+                            
                             if (useScaleAndOffset == True):
                                 x = (x * globalScale[0]) + globalOffset[0]
                                 y = (y * globalScale[1]) + globalOffset[1]
                                 z = (z * globalScale[2]) + globalOffset[2]
-                            #~                                                           
+                                                                                       
                             pressure = 1.0
                             strength = 1.0
                             points.append(LatkPoint((x,y,z), pressure, strength))                                         
@@ -129,12 +133,12 @@ class Latk(object):
                                 else:
                                     y = float(jsonPoint["y"])
                                     z = float(jsonPoint["z"]) 
-                                #~
+                                
                                 if (useScaleAndOffset == True):
                                     x = (x * globalScale[0]) + globalOffset[0]
                                     y = (y * globalScale[1]) + globalOffset[1]
                                     z = (z * globalScale[2]) + globalOffset[2]
-                                #~                                                           
+                                                                                           
                                 pressure = 1.0
                                 strength = 1.0
                                 points.append(LatkPoint((x,y,z), pressure, strength))
@@ -171,12 +175,12 @@ class Latk(object):
                                     else:
                                         y = float(jsonPoint["co"][1])
                                         z = float(jsonPoint["co"][2]) 
-                                    #~
+                                    
                                     if (useScaleAndOffset == True):
                                         x = (x * globalScale[0]) + globalOffset[0]
                                         y = (y * globalScale[1]) + globalOffset[1]
                                         z = (z * globalScale[2]) + globalOffset[2]
-                                    #~                                                           
+                                                                                               
                                     pressure = 1.0
                                     strength = 1.0
                                     try:
@@ -245,12 +249,12 @@ class Latk(object):
                                     else:
                                         y = float(jsonPoint["co"][1])
                                         z = float(jsonPoint["co"][2]) 
-                                    #~
+                                    
                                     if (useScaleAndOffset == True):
                                         x = (x * globalScale[0]) + globalOffset[0]
                                         y = (y * globalScale[1]) + globalOffset[1]
                                         z = (z * globalScale[2]) + globalOffset[2]
-                                    #~                                                                                             
+                                                                                                                                 
                                     pressure = 1.0
                                     strength = 1.0
                                     vertex_color = (0.0,0.0,0.0,0.0)
@@ -282,22 +286,22 @@ class Latk(object):
                         self.layers.append(layer)
 
     def write(self, filepath, yUp=True, useScaleAndOffset=False, zipped=True, globalScale=(1.0, 1.0, 1.0), globalOffset=(0.0, 0.0, 0.0)): # defaults to Unity, Maya Y up
-        FINAL_LAYER_LIST = [] # string array
+        FINAL_LAYER_LIST = []
 
         for layer in self.layers:
-            sb = [] # string array
-            sbHeader = [] # string array
+            sb = []
+            sbHeader = []
             sbHeader.append("\t\t\t\t\t\"frames\": [")
             sb.append("\n".join(sbHeader))
 
             for h, frame in enumerate(layer.frames):
-                sbbHeader = [] # string array
+                sbbHeader = []
                 sbbHeader.append("\t\t\t\t\t\t{")
                 sbbHeader.append("\t\t\t\t\t\t\t\"strokes\": [")
                 sb.append("\n".join(sbbHeader))
                 
                 for i, stroke in enumerate(frame.strokes):
-                    sbb = [] # string array
+                    sbb = []
                     sbb.append("\t\t\t\t\t\t\t\t{")
                     color = (0.0, 0.0, 0.0, 1.0)
                     fill_color = (0.0, 0.0, 0.0, 0.0)
@@ -333,12 +337,12 @@ class Latk(object):
                             else:
                                 y = point.co[1]
                                 z = point.co[2]  
-                            #~
+                            
                             if (useScaleAndOffset == True):
                                 x = (x * globalScale[0]) + globalOffset[0]
                                 y = (y * globalScale[1]) + globalOffset[1]
                                 z = (z * globalScale[2]) + globalOffset[2]
-                            #~ 
+                             
                             pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\": " + str(float32(point.pressure)) + ", \"strength\": " + str(float32(point.strength)) + ", \"vertex_color\": [" + str(float32(r)) + ", " + str(float32(g)) + ", " + str(float32(b)) + ", " + str(float32(a)) + "]}"
                                           
                             if (j == len(stroke.points) - 1):
@@ -477,7 +481,7 @@ class Latk(object):
         allX.sort()
         allY.sort()
         allZ.sort()
-        #~
+        
         leastValArray = [ allX[0], allY[0], allZ[0] ]
         mostValArray = [ allX[len(allX)-1], allY[len(allY)-1], allZ[len(allZ)-1] ]
         leastValArray.sort()
@@ -485,18 +489,18 @@ class Latk(object):
         leastVal = leastValArray[0]
         mostVal = mostValArray[2]
         valRange = mostVal - leastVal
-        #~
+        
         xRange = (allX[len(allX)-1] - allX[0]) / valRange
         yRange = (allY[len(allY)-1] - allY[0]) / valRange
         zRange = (allZ[len(allZ)-1] - allZ[0]) / valRange
-        #~
+        
         minValX = minVal * xRange
         minValY = minVal * yRange
         minValZ = minVal * zRange
         maxValX = maxVal * xRange
         maxValY = maxVal * yRange
         maxValZ = maxVal * zRange
-        #~
+        
         for layer in self.layers:
             for frame in layer.frames:
                 for stroke in frame.strokes:
@@ -509,18 +513,18 @@ class Latk(object):
 
     def smoothStroke(self, stroke):
         points = stroke.points
-        #~
+        
         weight = 18
         scale = 1.0 / (weight + 2)
         lower = 0
         upper = 0
         center = 0
-        #~
+        
         for i in range(1, len(points) - 2):
             lower = points[i-1].co
             center = points[i].co
             upper = points[i+1].co
-            #~
+            
             x = (lower[0] + weight * center[0] + upper[0]) * scale
             y = (lower[1] + weight * center[1] + upper[1]) * scale
             z = (lower[2] + weight * center[2] + upper[2]) * scale
@@ -528,7 +532,7 @@ class Latk(object):
         
     def splitStroke(self, stroke): 
         points = stroke.points
-        #~
+        
         for i in range(1, len(points), 2):
             center = (points[i].co[0], points[i].co[1], points[i].co[2])
             lower = (points[i-1].co[0], points[i-1].co[1], points[i-1].co[2])
@@ -536,10 +540,10 @@ class Latk(object):
             y = (center[1] + lower[1]) / 2
             z = (center[2] + lower[2]) / 2
             p = (x, y, z)
-            #~
+            
             pressure = (points[i-1].pressure + points[i].pressure) / 2
             strength = (points[i-1].strength + points[i].strength) / 2
-            #~
+            
             pt = LatkPoint(p, pressure, strength)
             stroke.points.insert(i, pt)
 
@@ -556,14 +560,14 @@ class Latk(object):
             for frame in layer.frames: 
                 for stroke in frame.strokes:   
                     points = stroke.points
-                    #~
+                    
                     for i in range(0, splitReps):
                         self.splitStroke(stroke)  
                         self.smoothStroke(stroke)  
-                    #~
+                    
                     for i in range(0, smoothReps - splitReps):
                         self.smoothStroke(stroke)
-                    #~
+                    
                     for i in range(0, reduceReps):
                         self.reduceStroke(stroke)    
 
@@ -614,6 +618,19 @@ class Latk(object):
     def remapInt(self, value, min1, max1, min2, max2):
         return int(self.remap(value, min1, max1, min2, max2))
 
+    def countAllFrames(self):
+        returns = 0
+        for layer in self.layers:
+            returns += len(layer.frames)
+        return returns
+
+    def countAllStrokes(self):
+        returns = 0
+        for layer in self.layers:
+            for frame in layer.frames:
+                returns += len(frame.strokes)
+        return returns
+
     def writeTextFile(self, name="test.txt", lines=None):
         file = open(name,"w") 
         for line in lines:
@@ -624,9 +641,6 @@ class Latk(object):
         file = open(name, "r") 
         return file.read() 
 
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-
     def readTiltBrush(self, filepath=None, vertSkip=1):
         globalScale = (0.1, 0.1, 0.1)
         globalOffset = (0, 0, 0)
@@ -636,10 +650,10 @@ class Latk(object):
 
         if (filetype == "tilt" or filetype == "zip"): # Tilt Brush binary file with original stroke data
             t = Tilt(filepath)
-            #~
+            
             layer = LatkLayer(name="TiltBrush")
             frame = LatkFrame()
-            #~
+            
             for tstroke in t.sketch.strokes:
                 strokeColor = (0,0,0)
                 pointGroup = []
@@ -653,7 +667,7 @@ class Latk(object):
                     x = 0.0
                     y = 0.0
                     z = 0.0
-                    #~
+                    
                     point = controlpoint.position
                     last_point = last_controlpoint.position
                     if (i==0 or point != last_point): # try to prevent duplicate points
@@ -664,7 +678,7 @@ class Latk(object):
                             # TODO strength?
                         except:
                             pass
-                        #~
+                        
                         x = point[0]
                         y = point[2]
                         z = point[1]
@@ -673,7 +687,7 @@ class Latk(object):
                             y = (y * globalScale[1]) + globalOffset[1]
                             z = (z * globalScale[2]) + globalOffset[2]
                         pointGroup.append((x, y, z, pressure, strength))
-                        #~
+                        
                 points = []
                 for l, point in enumerate(pointGroup):
                     point = LatkPoint(co=(point[0], point[1], point[2]), pressure=point[3], strength=point[4])
@@ -687,13 +701,13 @@ class Latk(object):
         else: # Tilt Brush JSON export file, not original stroke data
             pressure = 1.0
             strength = 1.0
-            #~
+            
             with open(filepath) as data_file: 
                 data = json.load(data_file)
-            #~
+            
             layer = LatkLayer(name="TiltBrush")
             frame = LatkFrame()
-            #~
+            
             for strokeJson in data["strokes"]:
                 strokeColor = (0,0,0)
                 try:
@@ -701,7 +715,7 @@ class Latk(object):
                     strokeColor = (colorGroup[0][0], colorGroup[0][1], colorGroup[0][2])
                 except:
                     pass
-                #~
+                
                 vertsFailed = False
                 vertGroup = []
                 pointGroup = []
@@ -739,8 +753,6 @@ class Latk(object):
             
             layer.frames.append(frame)
             self.layers.append(layer)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def readAsc(self, filepath=None, strokeLength=1, vertexColor=True):
         globalScale = (1, 1, 1)
@@ -848,8 +860,6 @@ class Latk(object):
 
         self.writeTextFile(filepath, "\n".join(ascData))
 
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer(object):    
     def __init__(self, frames=None, name="layer"): 
@@ -863,7 +873,6 @@ class LatkLayer(object):
     def getInfo(self):
         return self.name.split(".")[0]
     
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkFrame(object):   
     def __init__(self, strokes=None, frame_number=0): 
@@ -874,7 +883,6 @@ class LatkFrame(object):
         self.frame_number = frame_number
         self.parent_location = (0.0,0.0,0.0)
         
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke(object):       
     def __init__(self, points=None, color=(0.0, 0.0, 0.0, 1.0), fill_color=(0.0, 0.0, 0.0, 0.0)): 
@@ -910,7 +918,6 @@ class LatkStroke(object):
             returns.append(point.strength)
         return returns
 
-# ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkPoint(object):
     def __init__(self, co, pressure=1.0, strength=1.0, vertex_color=(0.0, 0.0, 0.0, 0.0)): # args float tuple, float, float
@@ -921,7 +928,3 @@ class LatkPoint(object):
         self.distance = -1
         self.index = -1
     
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-# * * * * * * * * * * * * * * * * * * * * * * * * * *
-
