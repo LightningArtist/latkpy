@@ -26,10 +26,10 @@ https://fox-gieg.com
 import json
 from math import sqrt
 import numpy as np
-from . zip import *
-from . tilt import *
-from . rdp import *
-from . kmeans import *
+from . latk_zip import *
+from . latk_tilt import *
+from . latk_rdp import *
+from . latk_kmeans import *
 
 class Latk(object):     
     def __init__(self, filepath=None, layers=None, init=False, coords=None, color=None, frame_rate=12): # args string, Latk array, float tuple array, float tuple           

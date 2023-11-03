@@ -5,4 +5,5 @@
 *.zip
 dist/*
 .DS_Store
+latk.egg-info/
 
